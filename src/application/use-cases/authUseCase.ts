@@ -11,15 +11,12 @@ export class SignupUseCase{
     ){}
 
     async execute(username:string,email:string,password:string): Promise<User>{
-        console.log('auth use case reached')
 
         const otp = await this.generateOtpUseCase.execute(email)
 
         const newUser = new User('',username,email,password);
         newUser.hashedPassword = await this.hashPassword(password);
-        console.log('user created')
         return newUser;
-        // const savedUser = this.userRepository.createUser(newUser)
     }
 
     private async hashPassword(password:string,):Promise<string>{

@@ -7,22 +7,29 @@ import EmailService from "../../../presentation/services/emailService";
 import RedisClient from '../../../infrastructure/database/redic-client'
 import { OTPRepositoryImpl } from "../../../infrastructure/repositories/OTPRepository.impl";
 import { SignupUseCase } from "../../use-cases/authUseCase";
+import { AuthService } from "../../../adapters/services/AuthService";
+import { LoginUseCase } from "../../use-cases/loginUseCase";
+import { LoginController } from "../controllers/login-controller";
 
 
 //Dependency injection setup
 const userRepository = new UserRepositoryImpl()
 const otpRepository = new OTPRepositoryImpl(RedisClient)
 const emailService = new EmailService()
+const authService = new AuthService
 
 const generateOtpUseCase = new GenerateOtp(otpRepository,emailService)
 const verifyOtpUsecase = new verifyOTP(otpRepository,userRepository)
 const signupUseCase = new SignupUseCase(userRepository,generateOtpUseCase)
+const loginUseCase = new LoginUseCase(userRepository,authService)
 
 const signupController = new SignupController(signupUseCase,generateOtpUseCase,verifyOtpUsecase)
+const loginController = new LoginController()
 
 const router = Router()
 
 router.post('/signup',signupController.handleSignup.bind(signupController))
 router.post('/verify-otp',signupController.handleVerifyOtp.bind(signupController))
+router.post('/login',loginController.login.bind(loginController))
 
 export default router

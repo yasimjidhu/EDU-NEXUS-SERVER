@@ -12,15 +12,22 @@ const emailService_1 = __importDefault(require("../../../presentation/services/e
 const redic_client_1 = __importDefault(require("../../../infrastructure/database/redic-client"));
 const OTPRepository_impl_1 = require("../../../infrastructure/repositories/OTPRepository.impl");
 const authUseCase_1 = require("../../use-cases/authUseCase");
+const AuthService_1 = require("../../../adapters/services/AuthService");
+const loginUseCase_1 = require("../../use-cases/loginUseCase");
+const login_controller_1 = require("../controllers/login-controller");
 //Dependency injection setup
 const userRepository = new userRepository_1.UserRepositoryImpl();
 const otpRepository = new OTPRepository_impl_1.OTPRepositoryImpl(redic_client_1.default);
 const emailService = new emailService_1.default();
+const authService = new AuthService_1.AuthService;
 const generateOtpUseCase = new generateOtpUseCase_1.default(otpRepository, emailService);
 const verifyOtpUsecase = new verifyOtpUseCase_1.default(otpRepository, userRepository);
 const signupUseCase = new authUseCase_1.SignupUseCase(userRepository, generateOtpUseCase);
+const loginUseCase = new loginUseCase_1.LoginUseCase(userRepository, authService);
 const signupController = new auth_controller_1.SignupController(signupUseCase, generateOtpUseCase, verifyOtpUsecase);
+const loginController = new login_controller_1.LoginController();
 const router = (0, express_1.Router)();
 router.post('/signup', signupController.handleSignup.bind(signupController));
 router.post('/verify-otp', signupController.handleVerifyOtp.bind(signupController));
+router.post('/login', loginController.login.bind(loginController));
 exports.default = router;

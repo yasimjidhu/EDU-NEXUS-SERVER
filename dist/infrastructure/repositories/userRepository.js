@@ -48,5 +48,14 @@ class UserRepositoryImpl {
             return newUser.toObject();
         });
     }
+    findByEmail(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield UserModel.findOne({ email });
+            if (!user) {
+                return null;
+            }
+            return user.toObject();
+        });
+    }
 }
 exports.UserRepositoryImpl = UserRepositoryImpl;
