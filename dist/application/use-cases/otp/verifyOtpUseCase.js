@@ -14,21 +14,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = require("../../../domain/entities/user");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-class verifyOTP {
+class VerifyOTP {
     constructor(otpRepository, userRepository) {
         this.otpRepository = otpRepository;
         this.userRepository = userRepository;
     }
     execute(email, otp, username, password) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!email || !otp) {
+                return 'Email and OTP are required.';
+            }
             const isValid = yield this.otpRepository.verifyOTP(email, otp);
             if (!isValid) {
-                throw new Error('Invalid or expired otp');
+                return 'No user found in the database or invalid OTP.';
             }
-            // if the otp is valid , create the user
-            const hashedPassword = yield this.hashPassword(password);
-            const newUser = new user_1.User('', username, email, hashedPassword);
-            return this.userRepository.createUser(newUser);
+            // Handle forgot password scenario where only email and OTP are required
+            if (username === null && password === null) {
+                return true;
+            }
+            // Handle user signup scenario where username and password are required
+            if (username !== null && password !== null) {
+                const hashedPassword = yield this.hashPassword(password);
+                const newUser = new user_1.User('', username, email, hashedPassword);
+                return this.userRepository.createUser(newUser);
+            }
+            return 'Username and password are required for registration.';
         });
     }
     hashPassword(password) {
@@ -38,4 +48,4 @@ class verifyOTP {
         });
     }
 }
-exports.default = verifyOTP;
+exports.default = VerifyOTP;

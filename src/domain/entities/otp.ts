@@ -10,4 +10,3 @@ export class OTP {
       this.otp = otp;
     }
   }
-  

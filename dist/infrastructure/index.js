@@ -11,10 +11,20 @@ const authRoutes_1 = __importDefault(require("../application/interfaces/routes/a
 const redis_1 = require("redis");
 const dotenv_1 = __importDefault(require("dotenv"));
 const connect_redis_1 = __importDefault(require("connect-redis"));
+const cors_1 = __importDefault(require("cors"));
+const passport_1 = __importDefault(require("passport"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+app.use((0, express_session_1.default)({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+}));
 app.use(express_1.default.json());
+app.use(passport_1.default.initialize());
+app.use(passport_1.default.session());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
+app.use((0, cors_1.default)());
 const redisClient = (0, redis_1.createClient)({
     url: process.env.REDIS_URL,
 });
@@ -29,11 +39,6 @@ redisClient
 const sessionStore = new connect_redis_1.default({
     client: redisClient,
 });
-app.use((0, express_session_1.default)({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false,
-}));
 app.use("/auth", authRoutes_1.default);
 (0, auth_db_1.default)()
     .then(() => {

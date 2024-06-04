@@ -24,4 +24,20 @@ export class SignupUseCase{
         const hashedPassword = bcrypt.hash(password,saltRounds)
         return hashedPassword
     }
+    async googleSignupUseCase(id:string):Promise<User | null>{
+        let user = await this.userRepository.findByGoogleId(id)
+
+        if(!user){
+            const newUser = new User('','','','',id)
+            await this.userRepository.createUser(newUser)
+        }
+        return user;
+    }
+    async findUserByEmail(email:string):Promise<User | null>{
+        let user = await this.userRepository.findByEmail(email)
+        if(user){
+            return user
+        }
+        return null
+    }
 }

@@ -35,9 +35,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepositoryImpl = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const userSchema = new mongoose_1.Schema({
+    googleId: { type: String, required: false, unique: true },
     username: { type: String, required: true },
     email: { type: String, required: true },
-    hashedPassword: { type: String, required: true }
+    hashedPassword: { type: String, required: false }
 });
 const UserModel = mongoose_1.default.model('User', userSchema);
 class UserRepositoryImpl {
@@ -55,6 +56,18 @@ class UserRepositoryImpl {
                 return null;
             }
             return user.toObject();
+        });
+    }
+    findById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield UserModel.findOne({ id });
+            return user ? user.toObject() : null;
+        });
+    }
+    findByGoogleId(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield UserModel.findOne({ googleId: id });
+            return user ? user.toObject() : null;
         });
     }
 }

@@ -14,14 +14,24 @@ class LoginUseCase {
     constructor(userRepository, authService) {
         this.userRepository = userRepository;
         this.authService = authService;
+        this.email = 'admin@gmail.com';
+        this.password = 'admin@123';
     }
     execute(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this.userRepository.findByEmail(email);
-            if (!user || !(yield this.authService.comparePassword(password, user.hashedPassword))) {
+            if (!user || !user.hashedPassword || !(yield this.authService.comparePassword(password, user.hashedPassword))) {
                 throw new Error('Invalid email or password');
             }
             return this.authService.generateToken(user);
+        });
+    }
+    verifyAdmin(email, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (email != this.email || password != this.password) {
+                return false;
+            }
+            return true;
         });
     }
 }

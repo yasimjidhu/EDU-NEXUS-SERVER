@@ -13,7 +13,6 @@ exports.generateToken = generateToken;
 const verifyToken = (token) => {
     try {
         const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
-        console.log('this is the decoded token ', decoded);
         return decoded;
     }
     catch (err) {

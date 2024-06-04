@@ -35,5 +35,24 @@ class SignupUseCase {
             return hashedPassword;
         });
     }
+    googleSignupUseCase(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let user = yield this.userRepository.findByGoogleId(id);
+            if (!user) {
+                const newUser = new user_1.User('', '', '', '', id);
+                yield this.userRepository.createUser(newUser);
+            }
+            return user;
+        });
+    }
+    findUserByEmail(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let user = yield this.userRepository.findByEmail(email);
+            if (user) {
+                return user;
+            }
+            return null;
+        });
+    }
 }
 exports.SignupUseCase = SignupUseCase;

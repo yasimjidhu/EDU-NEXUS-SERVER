@@ -9,7 +9,6 @@ const generateToken = (userDetails:{})=>{
 const verifyToken = (token:any)=>{
     try{
         const decoded =jwt.verify(token,jwtSecret)
-        console.log('this is the decoded token ',decoded)
         return decoded
     }catch(err){
         console.log(err)
