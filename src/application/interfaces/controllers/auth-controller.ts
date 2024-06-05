@@ -17,6 +17,7 @@ interface TicketData {
   name?: string;
 }
 
+
 export class SignupController {
   constructor(
     private signupUseCase: SignupUseCase,
@@ -49,13 +50,7 @@ export class SignupController {
   async handleVerifyOtp(req: Request, res: Response): Promise<void> {
 
     try {
-      const { otp, token } = req.body;
-
-      let {email} = req.body
-
-      if(!email){
-         email = req.cookies.userEmail
-      }
+      const { otp, token,email } = req.body;
   
       if (!email || !otp) {
         res.status(400).json({ message: 'Email and OTP are required' });
@@ -71,12 +66,12 @@ export class SignupController {
         const { username, password } = decodedToken as UserDetails;
   
         const user = await this.verifyOtp.execute(email, otp, username, password);
-        res.status(201).json({ user });
+        res.status(201).json({ user ,success:true});
       } else {
         const userFound = await this.verifyOtp.execute(email, otp, null, null);
   
-        if (userFound) {
-          res.status(200).json({ success: true });
+        if (userFound === true) {
+          res.status(200).json({ success: true , message:'Otp verified succesfully'});
         } else {
           res.status(400).json({ message: 'OTP verification failed' });
         }
@@ -85,7 +80,7 @@ export class SignupController {
       console.error(error);
       res.status(400).json({ message: error.message });
     }
-  }
+  }   
 
   async handleGoogleSignup(req: Request, res: Response): Promise<void> {
     const { token } = req.body;
@@ -112,6 +107,7 @@ export class SignupController {
 
   async handleForgotPassword(req:Request,res:Response):Promise<void>{
     try {
+      console.log('req.body in forgotpassword controller',req.body)
       const {email} = req.body
 
       const user = await this.signupUseCase.findUserByEmail(email)
@@ -119,12 +115,12 @@ export class SignupController {
         throw new Error('User not found')
       }
 
-      const otp = this.generateOtp.execute(email)
+      const otp = await this.generateOtp.execute(email)
+      
+      res.status(200).json(email)
 
-      res.cookie('userEmail',email,{httpOnly:true,secure:true,maxAge:5* 60 * 1000})
-      res.status(200).json({message:'Otp sent to email'})
     } catch (error:any) {
-      res.status(400).json({sucess:false,error:error.message})
+      res.status(400).json({sucess:false,message:'User not found, please register'})
     }
   }
 }

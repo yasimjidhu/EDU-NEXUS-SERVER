@@ -43,11 +43,7 @@ class SignupController {
     handleVerifyOtp(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { otp, token } = req.body;
-                let { email } = req.body;
-                if (!email) {
-                    email = req.cookies.userEmail;
-                }
+                const { otp, token, email } = req.body;
                 if (!email || !otp) {
                     res.status(400).json({ message: 'Email and OTP are required' });
                     return;
@@ -59,12 +55,12 @@ class SignupController {
                     }
                     const { username, password } = decodedToken;
                     const user = yield this.verifyOtp.execute(email, otp, username, password);
-                    res.status(201).json({ user });
+                    res.status(201).json({ user, success: true });
                 }
                 else {
                     const userFound = yield this.verifyOtp.execute(email, otp, null, null);
-                    if (userFound) {
-                        res.status(200).json({ success: true });
+                    if (userFound === true) {
+                        res.status(200).json({ success: true, message: 'Otp verified succesfully' });
                     }
                     else {
                         res.status(400).json({ message: 'OTP verification failed' });
@@ -102,17 +98,17 @@ class SignupController {
     handleForgotPassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log('req.body in forgotpassword controller', req.body);
                 const { email } = req.body;
                 const user = yield this.signupUseCase.findUserByEmail(email);
                 if (!user) {
                     throw new Error('User not found');
                 }
-                const otp = this.generateOtp.execute(email);
-                res.cookie('userEmail', email, { httpOnly: true, secure: true, maxAge: 5 * 60 * 1000 });
-                res.status(200).json({ message: 'Otp sent to email' });
+                const otp = yield this.generateOtp.execute(email);
+                res.status(200).json(email);
             }
             catch (error) {
-                res.status(400).json({ sucess: false, error: error.message });
+                res.status(400).json({ sucess: false, message: 'User not found, please register' });
             }
         });
     }

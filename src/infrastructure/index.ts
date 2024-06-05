@@ -1,19 +1,21 @@
 import express from "express";
+import cors from 'cors'
 import bodyParser from "body-parser";
 import session from "express-session";
 import connectDB from "./database/auth-db";
-import RedisClient from "../infrastructure/database/redic-client";
-import authRouter from "../application/interfaces/routes/authRoutes";
 import { createClient } from "redis";
 import connectRedis from "connect-redis";
 import dotenv from "dotenv";
 import RedisStore from "connect-redis";
-import cors from 'cors'
 import passport from 'passport'
+import cookieParser from 'cookie-parser'
+import RedisClient from "../infrastructure/database/redic-client";
+import authRouter from "../application/interfaces/routes/authRoutes";
 
 dotenv.config();
 
 const app = express();
+app.use(cookieParser())
 
 app.use(
   session({
@@ -27,8 +29,11 @@ app.use(express.json());
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(cors())
+const corsOptions = {
+  origin: 'http://localhost:5173',
+  credentials: true,
+};
+app.use(cors(corsOptions))
 
 const redisClient = createClient({
   url: process.env.REDIS_URL,

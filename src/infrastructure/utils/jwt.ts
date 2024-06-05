@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-const jwtSecret:string = process.env.JWT_SECRET||'secret'
+const jwtSecret:string = process.env.JWT_SECRET||'edu-nexus'
 
 const generateToken = (userDetails:{})=>{
     return jwt.sign(userDetails,jwtSecret,{expiresIn:'1h'})
