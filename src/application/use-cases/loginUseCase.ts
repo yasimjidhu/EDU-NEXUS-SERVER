@@ -11,18 +11,21 @@ export class LoginUseCase{
     private email:string = 'admin@gmail.com'
     private password:string = 'admin@123'
 
-    async execute(email:string,password:string):Promise<string>{
-        const user = await this.userRepository.findByEmail(email)
-        if(!user || !user.hashedPassword|| !(await this.authService.comparePassword(password,user.hashedPassword))){
-            throw new Error('Invalid email or password')
+    async execute(email: string, password: string): Promise<string> {
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            throw new Error('Incorrect email');
         }
-        return this.authService.generateToken(user)
-    }
 
-    async verifyAdmin(email:string,password:string):Promise<boolean>{
-        if(email !=this.email || password != this.password){
-            return false
+        if (user.role === 'admin' && email === this.email && password === this.password) {
+            return this.authService.generateToken(user);
         }
-        return true
+
+        const passwordMatch = await this.authService.comparePassword(password, user.hashedPassword);
+        if (!passwordMatch) {
+            throw new Error('Incorrect password');
+        }
+
+        return this.authService.generateToken(user);
     }
 }

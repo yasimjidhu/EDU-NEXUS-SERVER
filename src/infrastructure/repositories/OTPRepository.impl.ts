@@ -9,7 +9,7 @@ class OTPRepositoryImpl implements IOTPRepository{
     }
 
     async saveOTP(email: string, otp: string): Promise<void> {
-        const expirationTime = 600
+        const expirationTime = 180
         await this.redisClient.setEx(email,expirationTime,otp)
     }
 

@@ -29,18 +29,5 @@ class LoginController {
             }
         });
     }
-    handleAdminLogin(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { email, password } = req.body;
-            try {
-                const adminIsValid = yield loginUseCase.verifyAdmin(email, password);
-                res.status(200).json(adminIsValid);
-            }
-            catch (error) {
-                console.log('error in admincontroller', error);
-                res.status(500).json({ message: 'Error in AdminController' });
-            }
-        });
-    }
 }
 exports.LoginController = LoginController;

@@ -19,7 +19,7 @@ export class SignupUseCase{
         return newUser;
     }
 
-    private async hashPassword(password:string,):Promise<string>{
+    async hashPassword(password:string,):Promise<string>{
         const saltRounds =  10
         const hashedPassword = bcrypt.hash(password,saltRounds)
         return hashedPassword
@@ -39,5 +39,16 @@ export class SignupUseCase{
             return user
         }
         return null
+    }
+    async resetPassword(email:string,password:string):Promise<User|null>{
+        let hashedPassword = await this.hashPassword(password)
+        console.log('hashed password',hashedPassword)
+
+        let updatedUser = this.userRepository.resetPassword(email,hashedPassword)
+
+        if(!updatedUser){
+            return null
+        }
+        return updatedUser
     }
 }

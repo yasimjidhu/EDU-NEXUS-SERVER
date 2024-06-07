@@ -28,8 +28,15 @@ class EmailService {
             const mailOptions = {
                 from: process.env.EMAIL_USER,
                 to: email,
-                subject: 'Your OTP Code for Signup',
-                text: `this is your otp code ${otp} `
+                subject: 'Your OTP Code for Signup - Edu-Nexus',
+                text: `Dear Edu-Nexus User,
+    
+    This is your OTP code for signing up on Edu-Nexus: ${otp}
+    
+    Please enter this code in the OTP verification field to complete your registration.
+    
+    Best regards,
+    The Edu-Nexus Team`
             };
             yield this.transporter.sendMail(mailOptions);
         });

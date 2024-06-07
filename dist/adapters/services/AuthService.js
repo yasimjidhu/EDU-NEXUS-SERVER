@@ -22,7 +22,7 @@ class AuthService {
         });
     }
     generateToken(user) {
-        return jsonwebtoken_1.default.sign({ username: user.username, email: user.email }, 'secret', { expiresIn: '1h' });
+        return jsonwebtoken_1.default.sign({ username: user.username, email: user.email, role: user.role }, 'secret', { expiresIn: '1h' });
     }
 }
 exports.AuthService = AuthService;

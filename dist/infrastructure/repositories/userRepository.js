@@ -34,11 +34,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepositoryImpl = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
+var UserRole;
+(function (UserRole) {
+    UserRole["Admin"] = "admin";
+    UserRole["User"] = "user";
+    UserRole["Instructor"] = "instructor";
+})(UserRole || (UserRole = {}));
 const userSchema = new mongoose_1.Schema({
     googleId: { type: String, required: false, unique: true },
     username: { type: String, required: true },
     email: { type: String, required: true },
-    hashedPassword: { type: String, required: false }
+    hashedPassword: { type: String, required: false },
+    role: { type: String, enum: Object.values(UserRole), default: UserRole.User }
 });
 const UserModel = mongoose_1.default.model('User', userSchema);
 class UserRepositoryImpl {
@@ -68,6 +75,16 @@ class UserRepositoryImpl {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield UserModel.findOne({ googleId: id });
             return user ? user.toObject() : null;
+        });
+    }
+    resetPassword(email, hashedPassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = this.findByEmail(email);
+            if (!user) {
+                return null;
+            }
+            yield UserModel.findOneAndUpdate({ email }, { $set: { hashedPassword } });
+            return user;
         });
     }
 }

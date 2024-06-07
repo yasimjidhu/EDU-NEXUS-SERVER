@@ -59,8 +59,9 @@ class SignupController {
                 }
                 else {
                     const userFound = yield this.verifyOtp.execute(email, otp, null, null);
+                    const token = (0, jwt_1.generateToken)({ email });
                     if (userFound === true) {
-                        res.status(200).json({ success: true, message: 'Otp verified succesfully' });
+                        res.status(200).json({ success: true, message: 'Otp verified successfully', email });
                     }
                     else {
                         res.status(400).json({ message: 'OTP verification failed' });
@@ -98,7 +99,6 @@ class SignupController {
     handleForgotPassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('req.body in forgotpassword controller', req.body);
                 const { email } = req.body;
                 const user = yield this.signupUseCase.findUserByEmail(email);
                 if (!user) {
@@ -106,6 +106,21 @@ class SignupController {
                 }
                 const otp = yield this.generateOtp.execute(email);
                 res.status(200).json(email);
+            }
+            catch (error) {
+                res.status(400).json({ sucess: false, message: 'User not found, please register' });
+            }
+        });
+    }
+    handleResetPassword(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { newPassword, email } = req.body;
+                const resetPassword = this.signupUseCase.resetPassword(email, newPassword);
+                if (!resetPassword) {
+                    throw new Error('password reset failed');
+                }
+                res.status(200).json({ message: 'Password updated successfully' });
             }
             catch (error) {
                 res.status(400).json({ sucess: false, message: 'User not found, please register' });

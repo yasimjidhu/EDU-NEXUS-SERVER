@@ -16,7 +16,7 @@ class GenerateOtp{
         console.log('otp generated',otp)
         await this.otpRepository.saveOTP(email,otp)
         await this.emailService.sendOTPEmail(email,otp)
-        console.log('otp sent to email')
+        console.log(`otp sent to ${email}`)
         return otp
     }
 }

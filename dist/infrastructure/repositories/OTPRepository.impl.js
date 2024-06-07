@@ -16,7 +16,7 @@ class OTPRepositoryImpl {
     }
     saveOTP(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const expirationTime = 600;
+            const expirationTime = 180;
             yield this.redisClient.setEx(email, expirationTime, otp);
         });
     }

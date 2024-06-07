@@ -34,10 +34,10 @@ const router = (0, express_1.Router)();
 router.post('/signup', signupController.handleSignup.bind(signupController));
 router.post('/verify-otp', signupController.handleVerifyOtp.bind(signupController));
 router.post('/login', loginController.login.bind(loginController));
-router.post('/admin-login', loginController.handleAdminLogin.bind(loginController));
 router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport_1.default.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req, res) => {
     res.redirect('http://localhost:5173/home');
 });
 router.post('/forgot-password', signupController.handleForgotPassword.bind(signupController));
+router.post('/reset-password', signupController.handleResetPassword.bind(signupController));
 exports.default = router;

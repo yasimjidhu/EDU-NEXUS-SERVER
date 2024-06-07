@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "webpack",
+    "build": "tsc -p .",
     "watch": "webpack --watch",
-    "start": "node dist/index.ts",
+    "start": "node dist/infrastructure/index.js",
+    "dev":  "nodemon src/infrastructure/index.ts",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

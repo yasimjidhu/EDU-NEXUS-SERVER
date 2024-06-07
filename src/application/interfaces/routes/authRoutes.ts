@@ -42,12 +42,12 @@ const router = Router()
 router.post('/signup',signupController.handleSignup.bind(signupController))
 router.post('/verify-otp',signupController.handleVerifyOtp.bind(signupController))
 router.post('/login',loginController.login.bind(loginController))
-router.post('/admin-login',loginController.handleAdminLogin.bind(loginController))
 router.get('/google',passport.authenticate('google',{scope:['profile','email']}))
 router.get('/google/callback',passport.authenticate('google',{failureRedirect:'http://localhost:5173'}),(req:Request,res:Response)=>{
     res.redirect('http://localhost:5173/home')
 })
 router.post('/forgot-password',signupController.handleForgotPassword.bind(signupController))
+router.post('/reset-password',signupController.handleResetPassword.bind(signupController))
 
 
 

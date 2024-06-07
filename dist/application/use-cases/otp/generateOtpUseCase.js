@@ -24,7 +24,7 @@ class GenerateOtp {
             console.log('otp generated', otp);
             yield this.otpRepository.saveOTP(email, otp);
             yield this.emailService.sendOTPEmail(email, otp);
-            console.log('otp sent to email');
+            console.log(`otp sent to ${email}`);
             return otp;
         });
     }

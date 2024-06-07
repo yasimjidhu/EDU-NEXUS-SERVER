@@ -54,5 +54,16 @@ class SignupUseCase {
             return null;
         });
     }
+    resetPassword(email, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let hashedPassword = yield this.hashPassword(password);
+            console.log('hashed password', hashedPassword);
+            let updatedUser = this.userRepository.resetPassword(email, hashedPassword);
+            if (!updatedUser) {
+                return null;
+            }
+            return updatedUser;
+        });
+    }
 }
 exports.SignupUseCase = SignupUseCase;

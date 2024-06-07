@@ -69,9 +69,10 @@ export class SignupController {
         res.status(201).json({ user ,success:true});
       } else {
         const userFound = await this.verifyOtp.execute(email, otp, null, null);
-  
+        const token = generateToken({email})
+
         if (userFound === true) {
-          res.status(200).json({ success: true , message:'Otp verified succesfully'});
+          res.status(200).json({ success: true, message: 'Otp verified successfully',email });          
         } else {
           res.status(400).json({ message: 'OTP verification failed' });
         }
@@ -107,7 +108,6 @@ export class SignupController {
 
   async handleForgotPassword(req:Request,res:Response):Promise<void>{
     try {
-      console.log('req.body in forgotpassword controller',req.body)
       const {email} = req.body
 
       const user = await this.signupUseCase.findUserByEmail(email)
@@ -116,8 +116,23 @@ export class SignupController {
       }
 
       const otp = await this.generateOtp.execute(email)
-      
       res.status(200).json(email)
+
+    } catch (error:any) {
+      res.status(400).json({sucess:false,message:'User not found, please register'})
+    }
+  }
+  async handleResetPassword(req:Request,res:Response):Promise<void>{
+    try {
+
+      const {newPassword,email} = req.body
+
+      const resetPassword = this.signupUseCase.resetPassword(email,newPassword)
+
+      if(!resetPassword){
+        throw new Error('password reset failed')
+      }
+      res.status(200).json({message:'Password updated successfully'})
 
     } catch (error:any) {
       res.status(400).json({sucess:false,message:'User not found, please register'})

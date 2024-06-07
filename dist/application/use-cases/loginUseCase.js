@@ -20,18 +20,17 @@ class LoginUseCase {
     execute(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this.userRepository.findByEmail(email);
-            if (!user || !user.hashedPassword || !(yield this.authService.comparePassword(password, user.hashedPassword))) {
-                throw new Error('Invalid email or password');
+            if (!user) {
+                throw new Error('Incorrect email');
+            }
+            if (user.role === 'admin' && email === this.email && password === this.password) {
+                return this.authService.generateToken(user);
+            }
+            const passwordMatch = yield this.authService.comparePassword(password, user.hashedPassword);
+            if (!passwordMatch) {
+                throw new Error('Incorrect password');
             }
             return this.authService.generateToken(user);
-        });
-    }
-    verifyAdmin(email, password) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (email != this.email || password != this.password) {
-                return false;
-            }
-            return true;
         });
     }
 }
