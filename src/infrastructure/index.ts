@@ -11,6 +11,7 @@ import passport from 'passport'
 import cookieParser from 'cookie-parser'
 import RedisClient from "../infrastructure/database/redic-client";
 import authRouter from "../application/interfaces/routes/authRoutes";
+import axios from "axios";
 
 dotenv.config();
 
@@ -29,12 +30,13 @@ app.use(express.json());
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(bodyParser.urlencoded({ extended: true }));
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  credentials: true,
-};
-app.use(cors(corsOptions))
+// const corsOptions = {
+//   origin: 'http://localhost:5173',
+//   credentials: true,
+// };
+// app.use(cors(corsOptions))
 
+axios.defaults.withCredentials = true;
 const redisClient = createClient({
   url: process.env.REDIS_URL,
 });

@@ -39,7 +39,7 @@
             if(!user){
                 return null
             }
-            return user.toObject()
+            return user.toObject() as User
         }
         async findById(id:string):Promise<User|null>{
             const user = await UserModel.findOne({id})

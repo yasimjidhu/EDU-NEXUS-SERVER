@@ -15,6 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET || '';
+const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET || '';
 class AuthService {
     comparePassword(password, hashedPassword) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -23,6 +27,18 @@ class AuthService {
     }
     generateToken(user) {
         return jsonwebtoken_1.default.sign({ username: user.username, email: user.email, role: user.role }, 'secret', { expiresIn: '1h' });
+    }
+    generateAccessToken(user) {
+        return jsonwebtoken_1.default.sign({ username: user.username, email: user.email, role: user.role }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    }
+    generateRefreshToken(user) {
+        return jsonwebtoken_1.default.sign({ username: user.username, email: user.email, role: user.role }, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+    }
+    verifyAccessToken(token) {
+        return jsonwebtoken_1.default.verify(token, ACCESS_TOKEN_SECRET);
+    }
+    verifyRefreshToken(token) {
+        return jsonwebtoken_1.default.verify(token, REFRESH_TOKEN_SECRET);
     }
 }
 exports.AuthService = AuthService;

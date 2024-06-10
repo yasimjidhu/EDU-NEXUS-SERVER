@@ -11,14 +11,14 @@ export class LoginUseCase{
     private email:string = 'admin@gmail.com'
     private password:string = 'admin@123'
 
-    async execute(email: string, password: string): Promise<string> {
+    async execute(email: string, password: string): Promise<string | User> {
         const user = await this.userRepository.findByEmail(email);
         if (!user) {
             throw new Error('Incorrect email');
         }
-
+        
         if (user.role === 'admin' && email === this.email && password === this.password) {
-            return this.authService.generateToken(user);
+            return user
         }
 
         const passwordMatch = await this.authService.comparePassword(password, user.hashedPassword);
@@ -26,6 +26,6 @@ export class LoginUseCase{
             throw new Error('Incorrect password');
         }
 
-        return this.authService.generateToken(user);
+        return user
     }
 }

@@ -24,13 +24,13 @@ class LoginUseCase {
                 throw new Error('Incorrect email');
             }
             if (user.role === 'admin' && email === this.email && password === this.password) {
-                return this.authService.generateToken(user);
+                return user;
             }
             const passwordMatch = yield this.authService.comparePassword(password, user.hashedPassword);
             if (!passwordMatch) {
                 throw new Error('Incorrect password');
             }
-            return this.authService.generateToken(user);
+            return user;
         });
     }
 }

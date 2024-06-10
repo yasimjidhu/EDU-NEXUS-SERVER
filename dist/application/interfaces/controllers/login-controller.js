@@ -21,8 +21,42 @@ class LoginController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { email, password } = req.body;
-                const token = yield loginUseCase.execute(email, password);
-                res.status(200).json({ token });
+                const user = yield loginUseCase.execute(email, password);
+                if (user) {
+                    const accessToken = authService.generateAccessToken(user);
+                    const refreshToken = authService.generateRefreshToken(user);
+                    res.cookie("access_token", accessToken, {
+                        httpOnly: true,
+                        secure: false,
+                        sameSite: "strict",
+                    });
+                    res.cookie("refresh_token", refreshToken, {
+                        httpOnly: true,
+                        secure: false,
+                        sameSite: "strict",
+                        maxAge: 7 * 24 * 60 * 60 * 1000,
+                    });
+                    console.log("cookie in login", req.cookies);
+                    res.json({ message: "Login Successful" });
+                    return;
+                }
+                else {
+                    res.status(401).json({ message: "Invalid Credentials" });
+                    return;
+                }
+            }
+            catch (error) {
+                res.status(400).json({ error: error.message });
+            }
+        });
+    }
+    logout(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log(req.headers);
+                res.clearCookie("access_token");
+                res.clearCookie("refresh-token");
+                res.json({ message: "Logout Successful" });
             }
             catch (error) {
                 res.status(400).json({ error: error.message });
