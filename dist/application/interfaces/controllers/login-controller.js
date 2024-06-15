@@ -29,6 +29,7 @@ class LoginController {
                         httpOnly: true,
                         secure: false,
                         sameSite: "strict",
+                        maxAge: 15 * 60 * 60 * 1000
                     });
                     res.cookie("refresh_token", refreshToken, {
                         httpOnly: true,
@@ -36,8 +37,7 @@ class LoginController {
                         sameSite: "strict",
                         maxAge: 7 * 24 * 60 * 60 * 1000,
                     });
-                    console.log("cookie in login", req.cookies);
-                    res.json({ message: "Login Successful" });
+                    res.json({ message: "Login Successful", user: user });
                     return;
                 }
                 else {
@@ -53,9 +53,8 @@ class LoginController {
     logout(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(req.headers);
                 res.clearCookie("access_token");
-                res.clearCookie("refresh-token");
+                res.clearCookie("refresh_token");
                 res.json({ message: "Logout Successful" });
             }
             catch (error) {

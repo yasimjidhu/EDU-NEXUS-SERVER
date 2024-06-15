@@ -22,7 +22,7 @@ class VerifyOTP {
     execute(email, otp, username, password) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!email || !otp) {
-                return 'Email and OTP are required.';
+                throw new Error('OTP has expired');
             }
             const isValid = yield this.otpRepository.verifyOTP(email, otp);
             if (!isValid) {
@@ -34,8 +34,8 @@ class VerifyOTP {
             }
             // Handle user signup scenario where username and password are required
             if (username !== null && password !== null) {
-                const hashedPassword = yield this.hashPassword(password);
-                const newUser = new user_1.User('', username, email, hashedPassword);
+                // const hashedPassword = await this.hashPassword(password);
+                const newUser = new user_1.User('', username, email, password);
                 return this.userRepository.createUser(newUser);
             }
             return 'Username and password are required for registration.';

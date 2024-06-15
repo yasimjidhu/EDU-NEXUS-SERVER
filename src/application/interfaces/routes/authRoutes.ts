@@ -14,7 +14,7 @@ import jwt from 'jsonwebtoken'
 import { User } from "../../../domain/entities/user";
 import passport from "passport";
 import { PassportService } from "../../../adapters/services/passportService";
-import { authenticateToken,refreshAccessToken } from "../../../infrastructure/middleware/authenticationMiddleware";
+import { authenticateOrRefreshToken } from "../../../infrastructure/middleware/authenticationMiddleware";
 
 
 
@@ -26,6 +26,7 @@ passportService.setGoogleSignup()
 
 const emailService = new EmailService()
 const authService = new AuthService
+
 const otpRepository = new OTPRepositoryImpl(RedisClient)
 
 const loginUseCase = new LoginUseCase(userRepository,authService)
@@ -33,7 +34,7 @@ const verifyOtpUsecase = new verifyOTP(otpRepository,userRepository)
 const generateOtpUseCase = new GenerateOtp(otpRepository,emailService)
 const signupUseCase = new SignupUseCase(userRepository,generateOtpUseCase)
 
-const signupController = new SignupController(signupUseCase,generateOtpUseCase,verifyOtpUsecase,userRepository)
+const signupController = new SignupController(signupUseCase,generateOtpUseCase,verifyOtpUsecase,userRepository,authService)
 const loginController = new LoginController()
 
 
@@ -41,16 +42,18 @@ const router = Router()
 
 router.post('/signup',signupController.handleSignup.bind(signupController))
 router.post('/verify-otp',signupController.handleVerifyOtp.bind(signupController))
+router.post('/resendOtp',signupController.handleResendOtp.bind(signupController))
 
 router.post('/login',loginController.login.bind(loginController))
 router.post('/logout',loginController.logout.bind(loginController))
 
 router.get('/google',passport.authenticate('google',{scope:['profile','email']}))
 router.get('/google/callback',passport.authenticate('google',{failureRedirect:'http://localhost:5173'}),(req:Request,res:Response)=>{
+    console.log('response of google',res)
     res.redirect('http://localhost:5173/home')
 })
-router.post('/forgot-password',authenticateToken,signupController.handleForgotPassword.bind(signupController))
-router.post('/reset-password',authenticateToken,signupController.handleResetPassword.bind(signupController))
+router.post('/forgot-password',signupController.handleForgotPassword.bind(signupController))
+router.post('/reset-password',signupController.handleResetPassword.bind(signupController))
 
 
 export default router

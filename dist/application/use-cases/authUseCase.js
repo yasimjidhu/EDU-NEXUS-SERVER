@@ -22,6 +22,10 @@ class SignupUseCase {
     }
     execute(username, email, password) {
         return __awaiter(this, void 0, void 0, function* () {
+            let userFound = yield this.findUserByEmail(email);
+            if (userFound) {
+                throw new Error('Email already exists');
+            }
             const otp = yield this.generateOtpUseCase.execute(email);
             const newUser = new user_1.User('', username, email, password);
             newUser.hashedPassword = yield this.hashPassword(password);
@@ -57,12 +61,20 @@ class SignupUseCase {
     resetPassword(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
             let hashedPassword = yield this.hashPassword(password);
-            console.log('hashed password', hashedPassword);
             let updatedUser = this.userRepository.resetPassword(email, hashedPassword);
             if (!updatedUser) {
                 return null;
             }
             return updatedUser;
+        });
+    }
+    resendOtp(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let otpSent = yield this.generateOtpUseCase.execute(email);
+            if (otpSent) {
+                return true;
+            }
+            return false;
         });
     }
 }

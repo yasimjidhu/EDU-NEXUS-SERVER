@@ -10,33 +10,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SignupController = void 0;
-const jwt_1 = require("../../../infrastructure/utils/jwt");
 const google_auth_library_1 = require("google-auth-library");
 const client = new google_auth_library_1.OAuth2Client('62678914472-ll9pe5phb4tq5341lfgcgggmsinu93st.apps.googleusercontent.com');
 class SignupController {
-    constructor(signupUseCase, generateOtp, verifyOtp, userRepository) {
+    constructor(signupUseCase, generateOtp, verifyOtp, userRepository, authService) {
         this.signupUseCase = signupUseCase;
         this.generateOtp = generateOtp;
         this.verifyOtp = verifyOtp;
         this.userRepository = userRepository;
+        this.authService = authService;
     }
     handleSignup(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { username, email, password } = req.body;
             try {
-                const token = (0, jwt_1.generateToken)({ username, password });
                 const user = yield this.signupUseCase.execute(username, email, password);
-                res.cookie('token', token, {
+                const access_token = this.authService.generateAccessToken(user);
+                const refresh_token = this.authService.generateRefreshToken(user);
+                res.cookie('access_token', access_token, {
                     httpOnly: true,
                     secure: true,
                     sameSite: 'strict',
-                    maxAge: 3600000
+                    maxAge: 15 * 60 * 1000
                 });
-                res.status(201).json({ user, token });
+                res.cookie('refresh_token', refresh_token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'strict',
+                    maxAge: 7 * 24 * 60 * 60 * 1000
+                });
+                res.status(201).json({ user, access_token, refresh_token });
             }
             catch (error) {
                 console.error(error);
-                res.status(500).json({ message: "Error in SignupController" });
+                res.status(500).json({ message: error.message });
             }
         });
     }
@@ -45,11 +52,10 @@ class SignupController {
             try {
                 const { otp, token, email } = req.body;
                 if (!email || !otp) {
-                    res.status(400).json({ message: 'Email and OTP are required' });
-                    return;
+                    throw new Error('OTP has  Expired');
                 }
                 if (token) {
-                    const decodedToken = (0, jwt_1.verifyToken)(token);
+                    const decodedToken = this.authService.verifyAccessToken(token);
                     if (!decodedToken || typeof decodedToken !== 'object') {
                         throw new Error('Invalid token');
                     }
@@ -59,8 +65,15 @@ class SignupController {
                 }
                 else {
                     const userFound = yield this.verifyOtp.execute(email, otp, null, null);
-                    const token = (0, jwt_1.generateToken)({ email });
+                    const user = yield this.userRepository.findByEmail(email);
                     if (userFound === true) {
+                        const access_token = this.authService.generateAccessToken(user);
+                        res.cookie('access_token', access_token, {
+                            httpOnly: true,
+                            secure: true,
+                            sameSite: 'strict',
+                            maxAge: 15 * 60 * 1000
+                        });
                         res.status(200).json({ success: true, message: 'Otp verified successfully', email });
                     }
                     else {
@@ -69,8 +82,23 @@ class SignupController {
                 }
             }
             catch (error) {
-                console.error(error);
                 res.status(400).json({ message: error.message });
+            }
+        });
+    }
+    handleResendOtp(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email } = req.body;
+            try {
+                const otpSent = yield this.signupUseCase.resendOtp(email);
+                if (!otpSent) {
+                    throw new Error('invalid email');
+                }
+                res.status(200).json({ message: 'Otp sent to your email' });
+            }
+            catch (error) {
+                console.log('error in authController', error);
+                res.status(500).json({ message: error.message });
             }
         });
     }
@@ -100,6 +128,7 @@ class SignupController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { email } = req.body;
+                console.log(email);
                 const user = yield this.signupUseCase.findUserByEmail(email);
                 if (!user) {
                     throw new Error('User not found');
@@ -108,6 +137,7 @@ class SignupController {
                 res.status(200).json(email);
             }
             catch (error) {
+                console.log(error);
                 res.status(400).json({ sucess: false, message: 'User not found, please register' });
             }
         });

@@ -12,6 +12,11 @@ export class SignupUseCase{
 
     async execute(username:string,email:string,password:string): Promise<User>{
 
+        let userFound = await this.findUserByEmail(email)
+        if(userFound){
+            throw new Error('Email already exists')
+        }
+
         const otp = await this.generateOtpUseCase.execute(email)
 
         const newUser = new User('',username,email,password);
@@ -42,7 +47,6 @@ export class SignupUseCase{
     }
     async resetPassword(email:string,password:string):Promise<User|null>{
         let hashedPassword = await this.hashPassword(password)
-        console.log('hashed password',hashedPassword)
 
         let updatedUser = this.userRepository.resetPassword(email,hashedPassword)
 
@@ -50,5 +54,13 @@ export class SignupUseCase{
             return null
         }
         return updatedUser
+    }
+    async resendOtp(email:string):Promise<boolean>{
+        let otpSent = await this.generateOtpUseCase.execute(email)
+
+        if(otpSent){
+            return true
+        }
+        return false
     }
 }

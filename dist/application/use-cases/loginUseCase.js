@@ -14,17 +14,17 @@ class LoginUseCase {
     constructor(userRepository, authService) {
         this.userRepository = userRepository;
         this.authService = authService;
-        this.email = 'admin@gmail.com';
-        this.password = 'admin@123';
+        this.adminEmail = 'admin@gmail.com';
+        this.adminPassword = 'Admin@123';
     }
     execute(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (email === this.adminEmail && password === this.adminPassword) {
+                return { role: 'admin' };
+            }
             const user = yield this.userRepository.findByEmail(email);
             if (!user) {
                 throw new Error('Incorrect email');
-            }
-            if (user.role === 'admin' && email === this.email && password === this.password) {
-                return user;
             }
             const passwordMatch = yield this.authService.comparePassword(password, user.hashedPassword);
             if (!passwordMatch) {

@@ -23,6 +23,9 @@ class OTPRepositoryImpl {
     verifyOTP(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
             const storedOtp = yield this.redisClient.get(email);
+            if (!storedOtp) {
+                throw new Error('OTP has expired');
+            }
             return storedOtp === otp;
         });
     }

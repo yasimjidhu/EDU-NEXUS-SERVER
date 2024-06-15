@@ -5,6 +5,8 @@ import GenerateOtp from "../../use-cases/otp/generateOtpUseCase";
 import { generateToken, verifyToken } from "../../../infrastructure/utils/jwt";
 import { OAuth2Client } from "google-auth-library";
 import { UserRepository } from "../../../infrastructure/repositories/userRepository";
+import { AuthService } from "../../../adapters/services/AuthService";
+import { User } from "../../../domain/entities/user";
 const client = new OAuth2Client('62678914472-ll9pe5phb4tq5341lfgcgggmsinu93st.apps.googleusercontent.com');
 
 interface UserDetails {
@@ -23,27 +25,36 @@ export class SignupController {
     private signupUseCase: SignupUseCase,
     private generateOtp: GenerateOtp,
     private verifyOtp: verifyOTP,
-    private userRepository : UserRepository
+    private userRepository : UserRepository,
+    private authService:AuthService
   ) {}
 
+  
   async handleSignup(req: Request, res: Response): Promise<void> {
     const { username, email, password } = req.body;
 
     try {
-      const token = generateToken({ username, password });
       const user = await this.signupUseCase.execute(username, email, password);
+      const access_token = this.authService.generateAccessToken(user);
+      const refresh_token = this.authService.generateRefreshToken(user);
 
-      res.cookie('token', token, {
+      res.cookie('access_token', access_token, {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        maxAge: 3600000
+        maxAge: 15 * 60 * 1000
+      });
+      res.cookie('refresh_token', refresh_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
       });
 
-      res.status(201).json({ user, token });
-    } catch (error) {
+      res.status(201).json({ user, access_token, refresh_token });
+    } catch (error: any) {
       console.error(error);
-      res.status(500).json({ message: "Error in SignupController" });
+      res.status(500).json({ message: error.message });
     }
   }
 
@@ -53,12 +64,11 @@ export class SignupController {
       const { otp, token,email } = req.body;
   
       if (!email || !otp) {
-        res.status(400).json({ message: 'Email and OTP are required' });
-        return;
+        throw new Error('OTP has  Expired')
       }
   
       if (token) {
-        const decodedToken = verifyToken(token);
+        const decodedToken = this.authService.verifyAccessToken(token);
         if (!decodedToken || typeof decodedToken !== 'object') {
           throw new Error('Invalid token');
         }
@@ -69,19 +79,42 @@ export class SignupController {
         res.status(201).json({ user ,success:true});
       } else {
         const userFound = await this.verifyOtp.execute(email, otp, null, null);
-        const token = generateToken({email})
-
+        const user = await this.userRepository.findByEmail(email)
+        
         if (userFound === true) {
+          const access_token = this.authService.generateAccessToken(user as User)
+          res.cookie('access_token', access_token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000
+          });
           res.status(200).json({ success: true, message: 'Otp verified successfully',email });          
         } else {
           res.status(400).json({ message: 'OTP verification failed' });
         }
       }
     } catch (error: any) {
-      console.error(error);
       res.status(400).json({ message: error.message });
     }
   }   
+
+  async handleResendOtp(req:Request,res:Response):Promise<void>{
+    const {email} = req.body
+
+    try {
+      const otpSent = await this.signupUseCase.resendOtp(email)
+      if(!otpSent){
+          throw new Error('invalid email')
+      }
+      res.status(200).json({message:'Otp sent to your email'})
+    } catch (error:any) {
+      console.log('error in authController',error)
+      res.status(500).json({message:error.message})
+    }
+
+   
+  }
 
   async handleGoogleSignup(req: Request, res: Response): Promise<void> {
     const { token } = req.body;
@@ -109,6 +142,7 @@ export class SignupController {
   async handleForgotPassword(req:Request,res:Response):Promise<void>{
     try {
       const {email} = req.body
+      console.log(email)
 
       const user = await this.signupUseCase.findUserByEmail(email)
       if(!user){
@@ -119,6 +153,7 @@ export class SignupController {
       res.status(200).json(email)
 
     } catch (error:any) {
+      console.log(error)
       res.status(400).json({sucess:false,message:'User not found, please register'})
     }
   }
@@ -138,4 +173,5 @@ export class SignupController {
       res.status(400).json({sucess:false,message:'User not found, please register'})
     }
   }
+
 }

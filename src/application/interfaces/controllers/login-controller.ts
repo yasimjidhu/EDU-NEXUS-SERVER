@@ -25,6 +25,7 @@ export class LoginController {
           httpOnly: true,
           secure: false,
           sameSite: "strict",
+          maxAge:15 * 60 * 60 *1000
         });
         res.cookie("refresh_token", refreshToken, {
           httpOnly: true,
@@ -32,8 +33,7 @@ export class LoginController {
           sameSite: "strict",
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        console.log("cookie in login", req.cookies);
-        res.json({ message: "Login Successful" });
+        res.json({ message: "Login Successful",user:user });
         return;
       } else {
         res.status(401).json({ message: "Invalid Credentials" });
@@ -43,11 +43,13 @@ export class LoginController {
       res.status(400).json({ error: error.message });
     }
   }
+
+
   async logout(req: Request, res: Response): Promise<void> {
     try {
-      console.log(req.headers);
+  
       res.clearCookie("access_token");
-      res.clearCookie("refresh-token");
+      res.clearCookie("refresh_token");
 
       res.json({ message: "Logout Successful" });
     } catch (error: any) {

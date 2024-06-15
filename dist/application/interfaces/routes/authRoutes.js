@@ -17,7 +17,6 @@ const emailService_1 = __importDefault(require("../../../presentation/services/e
 const redic_client_1 = __importDefault(require("../../../infrastructure/database/redic-client"));
 const passport_1 = __importDefault(require("passport"));
 const passportService_1 = require("../../../adapters/services/passportService");
-const authenticationMiddleware_1 = require("../../../infrastructure/middleware/authenticationMiddleware");
 //Dependency injection setup
 const userRepository = new userRepository_1.UserRepositoryImpl();
 const passportService = new passportService_1.PassportService(userRepository);
@@ -29,17 +28,19 @@ const loginUseCase = new loginUseCase_1.LoginUseCase(userRepository, authService
 const verifyOtpUsecase = new verifyOtpUseCase_1.default(otpRepository, userRepository);
 const generateOtpUseCase = new generateOtpUseCase_1.default(otpRepository, emailService);
 const signupUseCase = new authUseCase_1.SignupUseCase(userRepository, generateOtpUseCase);
-const signupController = new auth_controller_1.SignupController(signupUseCase, generateOtpUseCase, verifyOtpUsecase, userRepository);
+const signupController = new auth_controller_1.SignupController(signupUseCase, generateOtpUseCase, verifyOtpUsecase, userRepository, authService);
 const loginController = new login_controller_1.LoginController();
 const router = (0, express_1.Router)();
 router.post('/signup', signupController.handleSignup.bind(signupController));
 router.post('/verify-otp', signupController.handleVerifyOtp.bind(signupController));
+router.post('/resendOtp', signupController.handleResendOtp.bind(signupController));
 router.post('/login', loginController.login.bind(loginController));
 router.post('/logout', loginController.logout.bind(loginController));
 router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport_1.default.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req, res) => {
+    console.log('response of google', res);
     res.redirect('http://localhost:5173/home');
 });
-router.post('/forgot-password', authenticationMiddleware_1.authenticateToken, signupController.handleForgotPassword.bind(signupController));
-router.post('/reset-password', authenticationMiddleware_1.authenticateToken, signupController.handleResetPassword.bind(signupController));
+router.post('/forgot-password', signupController.handleForgotPassword.bind(signupController));
+router.post('/reset-password', signupController.handleResetPassword.bind(signupController));
 exports.default = router;

@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const express_session_1 = __importDefault(require("express-session"));
 const auth_db_1 = __importDefault(require("./database/auth-db"));
@@ -26,11 +27,13 @@ app.use(express_1.default.json());
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
-// const corsOptions = {
-//   origin: 'http://localhost:5173',
-//   credentials: true,
-// };
-// app.use(cors(corsOptions))
+const corsOptions = {
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization',
+};
+app.use((0, cors_1.default)(corsOptions));
 axios_1.default.defaults.withCredentials = true;
 const redisClient = (0, redis_1.createClient)({
     url: process.env.REDIS_URL,

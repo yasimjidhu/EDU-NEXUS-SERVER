@@ -9,43 +9,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.refreshAccessToken = exports.authenticateToken = void 0;
+exports.authenticateOrRefreshToken = void 0;
 const AuthService_1 = require("../../adapters/services/AuthService");
 const authService = new AuthService_1.AuthService();
-// Middleware to authenticate access token
-const authenticateToken = (req, res, next) => {
-    console.log('request reached in authenticatetoken middleware', req.cookies.access_token);
-    console.log('header cookies', req.headers.cookie);
-    const token = req.cookies.access_token;
-    if (!token) {
-        return res.status(401).json({ message: 'Access Denied' });
-    }
-    try {
-        const verified = authService.verifyAccessToken(token);
-        req.user = verified;
-        next();
-    }
-    catch (error) {
-        return res.status(401).json({ message: 'Invalid Token' });
-    }
-};
-exports.authenticateToken = authenticateToken;
-// Middleware to refresh access token
-const refreshAccessToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+// Middleware to authenticate or refresh access token
+const authenticateOrRefreshToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let access_token = req.cookies.access_token;
     const refreshToken = req.cookies.refresh_token;
-    if (!refreshToken) {
-        return res.status(401).json({ message: 'Access Denied' });
+    if (!access_token && !refreshToken) {
+        return res.status(401).json({ message: 'un authorized' });
     }
-    try {
-        const verified = authService.verifyRefreshToken(refreshToken);
-        const user = { username: verified.username, email: verified.email, role: verified.role };
-        const newAccessToken = authService.generateAccessToken(user);
-        res.cookie('access_token', newAccessToken, { httpOnly: true, secure: false, sameSite: 'strict' });
-        req.user = verified;
-        next();
+    if (access_token) {
+        try {
+            const verified = authService.verifyAccessToken(access_token);
+            req.user = verified;
+            return next();
+        }
+        catch (error) {
+            console.log('Access token invalid, checking refresh token...');
+        }
     }
-    catch (error) {
-        return res.status(401).json({ message: 'Invalid Refresh Token' });
+    if (refreshToken) {
+        try {
+            const verified = authService.verifyRefreshToken(refreshToken);
+            const user = { username: verified.username, email: verified.email };
+            const newAccessToken = authService.generateAccessToken(user);
+            res.cookie('access_token', newAccessToken, { httpOnly: true, secure: false, sameSite: 'strict' });
+            req.user = verified;
+            return next();
+        }
+        catch (error) {
+            return res.status(401).json({ message: 'Invalid Refresh Token' });
+        }
     }
+    return res.status(401).json({ message: 'Access Denied' });
 });
-exports.refreshAccessToken = refreshAccessToken;
+exports.authenticateOrRefreshToken = authenticateOrRefreshToken;

@@ -15,6 +15,10 @@ class OTPRepositoryImpl implements IOTPRepository{
 
     async verifyOTP(email: string, otp: string): Promise<boolean> {
         const storedOtp:any = await this.redisClient.get(email)
+
+        if(!storedOtp){
+            throw new Error('OTP has expired')
+        }
         return storedOtp === otp
     }
 }

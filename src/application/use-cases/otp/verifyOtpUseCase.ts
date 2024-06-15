@@ -10,9 +10,8 @@ class VerifyOTP {
     ) {}
 
     async execute(email: string, otp: string, username: string | null, password: string | null): Promise<User | string | boolean> {
-        
         if (!email || !otp) {
-            return 'Email and OTP are required.';
+            throw new Error('OTP has expired');
         }
 
         const isValid = await this.otpRepository.verifyOTP(email, otp);
@@ -28,8 +27,8 @@ class VerifyOTP {
 
         // Handle user signup scenario where username and password are required
         if (username !== null && password !== null) {
-            const hashedPassword = await this.hashPassword(password);
-            const newUser = new User('', username, email, hashedPassword);
+            // const hashedPassword = await this.hashPassword(password);
+            const newUser = new User('', username, email, password);
             return this.userRepository.createUser(newUser);
         }
 

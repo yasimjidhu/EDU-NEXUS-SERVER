@@ -25,14 +25,11 @@ class AuthService {
             return yield bcryptjs_1.default.compare(password, hashedPassword);
         });
     }
-    generateToken(user) {
-        return jsonwebtoken_1.default.sign({ username: user.username, email: user.email, role: user.role }, 'secret', { expiresIn: '1h' });
-    }
     generateAccessToken(user) {
-        return jsonwebtoken_1.default.sign({ username: user.username, email: user.email, role: user.role }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+        return jsonwebtoken_1.default.sign({ username: user.username, password: user.hashedPassword, email: user.email }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     }
     generateRefreshToken(user) {
-        return jsonwebtoken_1.default.sign({ username: user.username, email: user.email, role: user.role }, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+        return jsonwebtoken_1.default.sign({ username: user.username, password: user.hashedPassword, email: user.email }, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
     }
     verifyAccessToken(token) {
         return jsonwebtoken_1.default.verify(token, ACCESS_TOKEN_SECRET);
