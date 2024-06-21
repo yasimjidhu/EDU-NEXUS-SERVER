@@ -113,7 +113,6 @@ export class SignupController {
       res.status(500).json({message:error.message})
     }
 
-   
   }
 
   async handleGoogleSignup(req: Request, res: Response): Promise<void> {

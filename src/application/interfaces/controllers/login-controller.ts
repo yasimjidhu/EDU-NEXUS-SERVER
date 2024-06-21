@@ -33,6 +33,7 @@ export class LoginController {
           sameSite: "strict",
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
+        console.log('logged user',user)
         res.json({ message: "Login Successful",user:user });
         return;
       } else {

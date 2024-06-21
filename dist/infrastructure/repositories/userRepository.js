@@ -45,7 +45,8 @@ const userSchema = new mongoose_1.Schema({
     username: { type: String, required: true },
     email: { type: String, required: true },
     hashedPassword: { type: String, required: false },
-    role: { type: String, enum: Object.values(UserRole), default: UserRole.User }
+    role: { type: String, enum: Object.values(UserRole), default: UserRole.User },
+    isBlocked: { type: Boolean, required: false, default: false }
 });
 const UserModel = mongoose_1.default.model('User', userSchema);
 class UserRepositoryImpl {
