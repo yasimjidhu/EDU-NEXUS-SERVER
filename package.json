@@ -7,7 +7,7 @@
     "build": "tsc -p .",
     "watch": "webpack --watch",
     "start": "node dist/infrastructure/index.js",
-    "dev":  "nodemon src/infrastructure/index.ts",
+    "dev": "nodemon src/infrastructure/index.ts",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,13 +24,15 @@
     "express-session": "^1.18.0",
     "google-auth-library": "^9.10.0",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
     "mongodb": "^6.7.0",
     "mongoose": "^8.4.0",
     "nodemailer": "^6.9.13",
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "redis": "^4.6.14"
+    "redis": "^4.6.14",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",
@@ -43,6 +45,7 @@
     "@types/otp-generator": "^4.0.2",
     "@types/passport": "^1.0.16",
     "@types/passport-google-oauth20": "^2.0.16",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
     "eslint": "^8.57.0",

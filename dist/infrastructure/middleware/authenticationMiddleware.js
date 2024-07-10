@@ -1,47 +1,23 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authenticateOrRefreshToken = void 0;
-const AuthService_1 = require("../../adapters/services/AuthService");
-const authService = new AuthService_1.AuthService();
-// Middleware to authenticate or refresh access token
-const authenticateOrRefreshToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    let access_token = req.cookies.access_token;
-    const refreshToken = req.cookies.refresh_token;
-    if (!access_token && !refreshToken) {
-        return res.status(401).json({ message: 'un authorized' });
+exports.authMiddleware = void 0;
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const jwt_access_secret = process.env.JWT_ACCESS_SECRET || 'access-scrt';
+const authMiddleware = (req, res, next) => {
+    const token = req.cookies.access_token;
+    if (!token) {
+        return res.status(403).json({ message: "No token provided" });
     }
-    if (access_token) {
-        try {
-            const verified = authService.verifyAccessToken(access_token);
-            req.user = verified;
-            return next();
-        }
-        catch (error) {
-            console.log('Access token invalid, checking refresh token...');
-        }
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, jwt_access_secret);
+        req.userId = decoded.userId; // Assign decoded.userId to req.userId
+        next();
     }
-    if (refreshToken) {
-        try {
-            const verified = authService.verifyRefreshToken(refreshToken);
-            const user = { username: verified.username, email: verified.email };
-            const newAccessToken = authService.generateAccessToken(user);
-            res.cookie('access_token', newAccessToken, { httpOnly: true, secure: false, sameSite: 'strict' });
-            req.user = verified;
-            return next();
-        }
-        catch (error) {
-            return res.status(401).json({ message: 'Invalid Refresh Token' });
-        }
+    catch (err) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
-    return res.status(401).json({ message: 'Access Denied' });
-});
-exports.authenticateOrRefreshToken = authenticateOrRefreshToken;
+};
+exports.authMiddleware = authMiddleware;

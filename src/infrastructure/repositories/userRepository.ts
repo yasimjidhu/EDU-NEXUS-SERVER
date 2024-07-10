@@ -3,7 +3,7 @@
 
     enum UserRole{
         Admin = 'admin',
-        User = 'user',
+        User = 'student',
         Instructor = 'instructor'
     }
 
@@ -15,7 +15,7 @@
         email:{type:String,required:true},
         hashedPassword:{type:String,required:false},
         role:{type:String,enum:Object.values(UserRole),default:UserRole.User},
-        isBlocked:{type:Boolean,required:false,default:false}
+        isBlocked:{type:Boolean,required:false}
     });
 
     const UserModel : Model<UserDocument> = mongoose.model<UserDocument>('User',userSchema);
@@ -23,6 +23,7 @@
 
     export interface UserRepository{
         createUser(user:User):Promise<User>;
+        updateUser(user:User):Promise<User>;
         findByEmail(email:string):Promise<User|null>;
         findById(id:string):Promise<User|null>;
         findByGoogleId(id:string):Promise<User|null>;
@@ -31,10 +32,30 @@
 
     export class UserRepositoryImpl implements UserRepository{
         async createUser(user: User): Promise<User> {
-            const newUser = new UserModel(user)
-            await newUser.save()
-            return newUser.toObject()
+            const newUser = await UserModel.create({
+                username: user.username,
+                email: user.email,
+                hashedPassword: user.hashedPassword
+            });
+        
+            return newUser.toObject();
         }
+
+        async updateUser(user: User): Promise<User> {
+            if (!user) {
+                throw new Error('User object must be provided');
+            }
+    
+            const updatedUser = await UserModel.findOneAndUpdate({ _id: user._id }, user, { new: true });
+    
+            if (!updatedUser) {
+                throw new Error('User not found or update failed');
+            }
+    
+            return updatedUser.toObject();
+        }
+    
+
         async findByEmail(email: string): Promise<User|null> {
             const user = await UserModel.findOne({email})
             if(!user){

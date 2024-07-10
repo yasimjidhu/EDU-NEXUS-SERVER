@@ -3,21 +3,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyToken = exports.generateToken = void 0;
+exports.verifyRefreshToken = exports.verifyAccessToken = exports.generateRefreshToken = exports.generateAccessToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const jwtSecret = process.env.JWT_SECRET || 'edu-nexus';
-const generateToken = (userDetails) => {
-    return jsonwebtoken_1.default.sign(userDetails, jwtSecret, { expiresIn: '1h' });
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const jwt_access_secret = process.env.JWT_ACCESS_TOKEN_SECRET || 'access-scrt';
+const access_token_expiry = process.env.ACCESS_TOKEN_EXPIRY || '15h';
+const jwt_refresh_secret = process.env.JWT_REFRESH_SECRET || 'refresh-scrt';
+const refresh_token_expiry = process.env.REFRESH_TOKEN_EXPIRY || '7d';
+const generateAccessToken = (user) => {
+    return jsonwebtoken_1.default.sign({ id: user._id, username: user.username }, jwt_access_secret, {
+        expiresIn: access_token_expiry
+    });
 };
-exports.generateToken = generateToken;
-const verifyToken = (token) => {
-    try {
-        const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
-        return decoded;
-    }
-    catch (err) {
-        console.log(err);
-        return null;
-    }
+exports.generateAccessToken = generateAccessToken;
+const generateRefreshToken = (user) => {
+    return jsonwebtoken_1.default.sign({ id: user._id, username: user.username }, jwt_refresh_secret, {
+        expiresIn: refresh_token_expiry,
+    });
 };
-exports.verifyToken = verifyToken;
+exports.generateRefreshToken = generateRefreshToken;
+const verifyAccessToken = (token) => {
+    return jsonwebtoken_1.default.verify(token, jwt_access_secret);
+};
+exports.verifyAccessToken = verifyAccessToken;
+const verifyRefreshToken = (token) => {
+    return jsonwebtoken_1.default.verify(token, jwt_refresh_secret);
+};
+exports.verifyRefreshToken = verifyRefreshToken;

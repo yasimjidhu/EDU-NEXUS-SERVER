@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.redisClient = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
@@ -35,21 +36,21 @@ const corsOptions = {
 };
 app.use((0, cors_1.default)(corsOptions));
 axios_1.default.defaults.withCredentials = true;
-const redisClient = (0, redis_1.createClient)({
+exports.redisClient = (0, redis_1.createClient)({
     url: process.env.REDIS_URL,
 });
-redisClient
+exports.redisClient
     .connect()
     .then(() => {
     console.log("Connected to Redis");
 })
     .catch((err) => {
-    console.error(err);
+    console.error('error occured in auth-service', err);
 });
 const sessionStore = new connect_redis_1.default({
-    client: redisClient,
+    client: exports.redisClient,
 });
-app.use("/auth", authRoutes_1.default);
+app.use("/", authRoutes_1.default);
 (0, auth_db_1.default)()
     .then(() => {
     app.listen(3001, () => {

@@ -9,27 +9,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OTPRepositoryImpl = void 0;
-class OTPRepositoryImpl {
-    constructor(redisClient) {
-        this.redisClient = redisClient;
+exports.RefreshTokenUseCase = void 0;
+class RefreshTokenUseCase {
+    constructor(tokenRepository, authService) {
+        this.tokenRepository = tokenRepository;
+        this.authService = authService;
     }
-    saveOTP(email, otp) {
+    execute(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const expirationTime = 180;
-            yield this.redisClient.setEx(email, expirationTime, otp);
-        });
-    }
-    verifyOTP(email, otp) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const storedOtp = yield this.redisClient.get(email);
-            console.log('stored otp is', storedOtp);
-            console.log('actual otp is', otp);
-            if (!storedOtp) {
-                throw new Error('OTP has expired');
-            }
-            return storedOtp === otp;
+            const decoded = this.authService.verifyRefreshToken(refreshToken);
+            // Generate new access token using decoded data
+            const newAccessToken = this.authService.generateAccessToken({
+                _id: decoded.userId,
+                username: decoded.username,
+                email: decoded.email,
+                role: decoded.role,
+                hashedPassword: '',
+            });
+            return newAccessToken;
         });
     }
 }
-exports.OTPRepositoryImpl = OTPRepositoryImpl;
+exports.RefreshTokenUseCase = RefreshTokenUseCase;

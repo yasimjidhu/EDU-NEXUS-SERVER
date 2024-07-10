@@ -15,9 +15,10 @@ class VerifyOTP {
         }
 
         const isValid = await this.otpRepository.verifyOTP(email, otp);
+        console.log('otp is isValid',isValid)
 
         if (!isValid) {
-            return 'No user found in the database or invalid OTP.';
+            return false
         }
 
         // Handle forgot password scenario where only email and OTP are required

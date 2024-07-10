@@ -24,22 +24,8 @@ class SignupController {
         return __awaiter(this, void 0, void 0, function* () {
             const { username, email, password } = req.body;
             try {
-                const user = yield this.signupUseCase.execute(username, email, password);
-                const access_token = this.authService.generateAccessToken(user);
-                const refresh_token = this.authService.generateRefreshToken(user);
-                res.cookie('access_token', access_token, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: 'strict',
-                    maxAge: 15 * 60 * 1000
-                });
-                res.cookie('refresh_token', refresh_token, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: 'strict',
-                    maxAge: 7 * 24 * 60 * 60 * 1000
-                });
-                res.status(201).json({ user, access_token, refresh_token });
+                const { user, token } = yield this.signupUseCase.execute(username, email, password);
+                res.status(201).json({ user: user, token });
             }
             catch (error) {
                 console.error(error);
@@ -61,12 +47,18 @@ class SignupController {
                     }
                     const { username, password } = decodedToken;
                     const user = yield this.verifyOtp.execute(email, otp, username, password);
-                    res.status(201).json({ user, success: true });
+                    console.log('the otp is ', user);
+                    if (!user) {
+                        res.status(400).json({ message: 'otp is invAlid' });
+                    }
+                    else {
+                        res.status(201).json({ user, success: true });
+                    }
                 }
                 else {
                     const userFound = yield this.verifyOtp.execute(email, otp, null, null);
                     const user = yield this.userRepository.findByEmail(email);
-                    if (userFound === true) {
+                    if (userFound === true && user) {
                         const access_token = this.authService.generateAccessToken(user);
                         res.cookie('access_token', access_token, {
                             httpOnly: true,

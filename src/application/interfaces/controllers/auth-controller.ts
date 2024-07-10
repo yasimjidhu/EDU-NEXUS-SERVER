@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { SignupUseCase } from "../../use-cases/authUseCase";
 import verifyOTP from "../../use-cases/otp/verifyOtpUseCase";
 import GenerateOtp from "../../use-cases/otp/generateOtpUseCase";
-import { generateToken, verifyToken } from "../../../infrastructure/utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../../../infrastructure/utils/jwt";
 import { OAuth2Client } from "google-auth-library";
 import { UserRepository } from "../../../infrastructure/repositories/userRepository";
 import { AuthService } from "../../../adapters/services/AuthService";
@@ -26,7 +26,7 @@ export class SignupController {
     private generateOtp: GenerateOtp,
     private verifyOtp: verifyOTP,
     private userRepository : UserRepository,
-    private authService:AuthService
+    private authService:AuthService,
   ) {}
 
   
@@ -34,24 +34,8 @@ export class SignupController {
     const { username, email, password } = req.body;
 
     try {
-      const user = await this.signupUseCase.execute(username, email, password);
-      const access_token = this.authService.generateAccessToken(user);
-      const refresh_token = this.authService.generateRefreshToken(user);
-
-      res.cookie('access_token', access_token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 15 * 60 * 1000
-      });
-      res.cookie('refresh_token', refresh_token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      });
-
-      res.status(201).json({ user, access_token, refresh_token });
+      const {user,token} = await this.signupUseCase.execute(username, email, password);
+      res.status(201).json({user:user,token});
     } catch (error: any) {
       console.error(error);
       res.status(500).json({ message: error.message });
@@ -61,8 +45,8 @@ export class SignupController {
   async handleVerifyOtp(req: Request, res: Response): Promise<void> {
 
     try {
+   
       const { otp, token,email } = req.body;
-  
       if (!email || !otp) {
         throw new Error('OTP has  Expired')
       }
@@ -76,13 +60,18 @@ export class SignupController {
         const { username, password } = decodedToken as UserDetails;
   
         const user = await this.verifyOtp.execute(email, otp, username, password);
-        res.status(201).json({ user ,success:true});
+        console.log('the otp is ',user)
+        if(!user){
+           res.status(400).json({message:'otp is invAlid'})
+        }else{
+          res.status(201).json({ user ,success:true});
+        }
       } else {
         const userFound = await this.verifyOtp.execute(email, otp, null, null);
         const user = await this.userRepository.findByEmail(email)
         
-        if (userFound === true) {
-          const access_token = this.authService.generateAccessToken(user as User)
+        if (userFound === true && user) {
+          const access_token = this.authService.generateAccessToken(user)
           res.cookie('access_token', access_token, {
             httpOnly: true,
             secure: true,
@@ -91,6 +80,7 @@ export class SignupController {
           });
           res.status(200).json({ success: true, message: 'Otp verified successfully',email });          
         } else {
+
           res.status(400).json({ message: 'OTP verification failed' });
         }
       }
@@ -172,5 +162,4 @@ export class SignupController {
       res.status(400).json({sucess:false,message:'User not found, please register'})
     }
   }
-
 }

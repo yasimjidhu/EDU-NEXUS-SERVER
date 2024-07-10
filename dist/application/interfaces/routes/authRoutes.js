@@ -17,25 +17,32 @@ const emailService_1 = __importDefault(require("../../../presentation/services/e
 const redic_client_1 = __importDefault(require("../../../infrastructure/database/redic-client"));
 const passport_1 = __importDefault(require("passport"));
 const passportService_1 = require("../../../adapters/services/passportService");
-//Dependency injection setup
+const tokenRepository_1 = require("../../../infrastructure/repositories/tokenRepository");
+const refreshTokenMiddleware_1 = __importDefault(require("../../../infrastructure/middleware/refreshTokenMiddleware"));
+const refreshTokenUseCase_1 = require("../../use-cases/refreshTokenUseCase");
+// Dependency injection setup
 const userRepository = new userRepository_1.UserRepositoryImpl();
 const passportService = new passportService_1.PassportService(userRepository);
 passportService.setGoogleSignup();
 const emailService = new emailService_1.default();
-const authService = new AuthService_1.AuthService;
+const authService = new AuthService_1.AuthService();
 const otpRepository = new OTPRepository_impl_1.OTPRepositoryImpl(redic_client_1.default);
-const loginUseCase = new loginUseCase_1.LoginUseCase(userRepository, authService);
+const tokenRepository = new tokenRepository_1.TokenRepository();
+const tokenMiddleware = new refreshTokenMiddleware_1.default(tokenRepository, authService);
+const loginUseCase = new loginUseCase_1.LoginUseCase(userRepository, authService, tokenRepository);
+const refreshTokenUseCase = new refreshTokenUseCase_1.RefreshTokenUseCase(tokenRepository, authService);
 const verifyOtpUsecase = new verifyOtpUseCase_1.default(otpRepository, userRepository);
 const generateOtpUseCase = new generateOtpUseCase_1.default(otpRepository, emailService);
-const signupUseCase = new authUseCase_1.SignupUseCase(userRepository, generateOtpUseCase);
+const signupUseCase = new authUseCase_1.SignupUseCase(userRepository, generateOtpUseCase, authService, tokenRepository);
 const signupController = new auth_controller_1.SignupController(signupUseCase, generateOtpUseCase, verifyOtpUsecase, userRepository, authService);
-const loginController = new login_controller_1.LoginController();
+const loginController = new login_controller_1.LoginController(loginUseCase, refreshTokenUseCase, authService, userRepository, tokenRepository);
 const router = (0, express_1.Router)();
 router.post('/signup', signupController.handleSignup.bind(signupController));
 router.post('/verify-otp', signupController.handleVerifyOtp.bind(signupController));
 router.post('/resendOtp', signupController.handleResendOtp.bind(signupController));
 router.post('/login', loginController.login.bind(loginController));
 router.post('/logout', loginController.logout.bind(loginController));
+router.post('/refresh-token', loginController.refreshToken.bind(loginController));
 router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport_1.default.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req, res) => {
     console.log('response of google', res);

@@ -26,16 +26,37 @@ class AuthService {
         });
     }
     generateAccessToken(user) {
-        return jsonwebtoken_1.default.sign({ username: user.username, password: user.hashedPassword, email: user.email }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+        return jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user._id, username: user === null || user === void 0 ? void 0 : user.username, email: user === null || user === void 0 ? void 0 : user.email, password: user === null || user === void 0 ? void 0 : user.hashedPassword, role: user === null || user === void 0 ? void 0 : user.role }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     }
     generateRefreshToken(user) {
-        return jsonwebtoken_1.default.sign({ username: user.username, password: user.hashedPassword, email: user.email }, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+        return jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user._id, username: user === null || user === void 0 ? void 0 : user.username, email: user === null || user === void 0 ? void 0 : user.email, password: user === null || user === void 0 ? void 0 : user.hashedPassword, role: user === null || user === void 0 ? void 0 : user.role }, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
     }
     verifyAccessToken(token) {
-        return jsonwebtoken_1.default.verify(token, ACCESS_TOKEN_SECRET);
+        try {
+            if (token) {
+                return jsonwebtoken_1.default.verify(token, ACCESS_TOKEN_SECRET);
+            }
+            else {
+                return null;
+            }
+        }
+        catch (error) {
+            if (error instanceof jsonwebtoken_1.default.TokenExpiredError) {
+                throw new Error('Access token expired');
+            }
+            throw new Error('Invalid access token');
+        }
     }
     verifyRefreshToken(token) {
-        return jsonwebtoken_1.default.verify(token, REFRESH_TOKEN_SECRET);
+        try {
+            return jsonwebtoken_1.default.verify(token, REFRESH_TOKEN_SECRET);
+        }
+        catch (error) {
+            if (error instanceof jsonwebtoken_1.default.TokenExpiredError) {
+                throw new Error('Refresh token expired');
+            }
+            throw new Error('Invalid refresh token');
+        }
     }
 }
 exports.AuthService = AuthService;

@@ -37,7 +37,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 var UserRole;
 (function (UserRole) {
     UserRole["Admin"] = "admin";
-    UserRole["User"] = "user";
+    UserRole["User"] = "student";
     UserRole["Instructor"] = "instructor";
 })(UserRole || (UserRole = {}));
 const userSchema = new mongoose_1.Schema({
@@ -46,15 +46,30 @@ const userSchema = new mongoose_1.Schema({
     email: { type: String, required: true },
     hashedPassword: { type: String, required: false },
     role: { type: String, enum: Object.values(UserRole), default: UserRole.User },
-    isBlocked: { type: Boolean, required: false, default: false }
+    isBlocked: { type: Boolean, required: false }
 });
 const UserModel = mongoose_1.default.model('User', userSchema);
 class UserRepositoryImpl {
     createUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newUser = new UserModel(user);
-            yield newUser.save();
+            const newUser = yield UserModel.create({
+                username: user.username,
+                email: user.email,
+                hashedPassword: user.hashedPassword
+            });
             return newUser.toObject();
+        });
+    }
+    updateUser(user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!user) {
+                throw new Error('User object must be provided');
+            }
+            const updatedUser = yield UserModel.findOneAndUpdate({ _id: user._id }, user, { new: true });
+            if (!updatedUser) {
+                throw new Error('User not found or update failed');
+            }
+            return updatedUser.toObject();
         });
     }
     findByEmail(email) {

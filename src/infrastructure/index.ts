@@ -12,6 +12,7 @@ import cookieParser from 'cookie-parser'
 import RedisClient from "../infrastructure/database/redic-client";
 import authRouter from "../application/interfaces/routes/authRoutes";
 import axios from "axios";
+import { startKafkaConsumer } from "./kafka/consumer";
 
 dotenv.config();
 
@@ -41,7 +42,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 axios.defaults.withCredentials = true;
-const redisClient = createClient({
+export const redisClient = createClient({
   url: process.env.REDIS_URL,
 });
 
@@ -51,16 +52,17 @@ redisClient
     console.log("Connected to Redis");
   })
   .catch((err) => {
-    console.error(err);
+    console.error('error occured in auth-service',err);
   });
 
 const sessionStore = new RedisStore({
   client: redisClient,
 });
 
-app.use("/auth", authRouter);
+app.use("/", authRouter);
 
 connectDB()
+
   .then(() => {
     app.listen(3001, () => {
       console.log("Auth service running on port 3001");
