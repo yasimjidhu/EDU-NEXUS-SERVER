@@ -7,19 +7,28 @@
         Instructor = 'instructor'
     }
 
-    export interface UserDocument  extends Document{}
+     interface UserDocument extends Document {
+        googleId: string;
+        username: string;
+        email: string;
+        hashedPassword: string;
+        profileImage?: string;  
+      }
 
+   
     const userSchema : Schema = new Schema({
         googleId:{type:String,required:false,unique:true},
         username:{type:String,required:true},
         email:{type:String,required:true},
         hashedPassword:{type:String,required:false},
         role:{type:String,enum:Object.values(UserRole),default:UserRole.User},
-        isBlocked:{type:Boolean,required:false}
+        isBlocked:{type:Boolean,required:false,default:false},
+        profileImage:{type:String}
     });
 
     const UserModel : Model<UserDocument> = mongoose.model<UserDocument>('User',userSchema);
 
+    export { UserModel, UserDocument };
 
     export interface UserRepository{
         createUser(user:User):Promise<User>;
@@ -28,6 +37,8 @@
         findById(id:string):Promise<User|null>;
         findByGoogleId(id:string):Promise<User|null>;
         resetPassword(email:string,hashedPassword:any):Promise<User|null>;
+        chaneUserRole(email:string):Promise<User|null>;
+        updateProfileImage(userId: string, profileImage: string): Promise<User | null>; 
     }
 
     export class UserRepositoryImpl implements UserRepository{
@@ -35,7 +46,8 @@
             const newUser = await UserModel.create({
                 username: user.username,
                 email: user.email,
-                hashedPassword: user.hashedPassword
+                hashedPassword: user.hashedPassword,
+                profileImage: user.profileImage !== undefined ? user.profileImage : null,
             });
         
             return newUser.toObject();
@@ -82,5 +94,24 @@
                 {$set:{hashedPassword}}
             )
             return user
+        }
+        async chaneUserRole(email:string):Promise<User|null>{
+            const updatedUser = await UserModel.findOneAndUpdate(
+                {email},
+                {$set:{role:'instructor'}}
+            )
+            if(!updatedUser){
+                return null
+            }
+            return updatedUser.toObject()
+        }
+        async updateProfileImage(userId: string, profileImage: string): Promise<User | null> {
+            const updatedUser = await UserModel.findByIdAndUpdate(
+                userId,
+                { $set: { profileImage } },
+                { new: true }
+            );
+    
+            return updatedUser ? updatedUser.toObject() as User : null;
         }
     }

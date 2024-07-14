@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoginUseCase = void 0;
 const uuid_1 = require("uuid");
+const redisService_1 = require("../../adapters/services/redisService");
 class LoginUseCase {
     constructor(userRepository, authService, tokenRepository) {
         this.userRepository = userRepository;
@@ -39,10 +40,10 @@ class LoginUseCase {
                 return { token, refreshToken, user: admin };
             }
             const user = yield this.userRepository.findByEmail(email);
-            // Check if user is blocked
-            if (user === null || user === void 0 ? void 0 : user.isBlocked) {
-                throw new Error('Your account is blocked. Please contact support for assistance.');
-            }
+            //  Check if user is blocked
+            // if (user?.isBlocked) {
+            //     throw new Error('Your account is blocked. Please contact support for assistance.');
+            // }
             if (!user) {
                 throw new Error('Incorrect email');
             }
@@ -65,9 +66,8 @@ class LoginUseCase {
                 const refreshToken = req.cookies.refresh_token;
                 if (refreshToken) {
                     const decoded = this.authService.verifyRefreshToken(refreshToken);
-                    console.log('user id in logout for remove refreshtoken from repo', decoded);
-                    // Remove the refresh token from the repository
-                    yield this.tokenRepository.deleteRefreshToken(decoded.userId);
+                    yield (0, redisService_1.addToBlacklist)(refreshToken); // Blacklist the token
+                    yield this.tokenRepository.deleteRefreshToken(decoded.userId); // Remove the token from the repository
                 }
                 // Clear the cookies
                 res.clearCookie('access_token', {

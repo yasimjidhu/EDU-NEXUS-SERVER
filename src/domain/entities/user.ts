@@ -7,6 +7,7 @@ export class User{
         public refreshToken?:string,
         public googleId?:string,
         public role?:string,
-        public isBlocked?:boolean
+        public isBlocked?:boolean,
+        public profileImage?:string
     ){}
 }   

@@ -39,17 +39,26 @@ class PassportService {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             callbackURL: "http://localhost:3001/auth/google/callback",
         }, (accessToken, refreshToken, profile, done) => __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d;
             try {
                 let user = yield this.userRepository.findByGoogleId(profile.id);
                 if (!user) {
-                    // if the user does not exist create a new user
+                    // If the user does not exist, create a new user
                     const newUser = {
                         googleId: profile.id,
                         username: profile.displayName,
-                        email: profile.emails[0].value,
+                        email: ((_b = (_a = profile.emails) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.value) || "",
                         hashedPassword: "",
+                        profileImage: (_d = (_c = profile.photos) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.value,
                     };
-                    user = yield this.userRepository.createUser(newUser); // Cast if necessary
+                    user = yield this.userRepository.createUser(newUser);
+                }
+                else {
+                    // Update profile image if it exists in the profile
+                    if (profile.photos && profile.photos.length > 0 && user._id) {
+                        // Update the user's profile image in your repository or service layer
+                        yield this.userRepository.updateProfileImage(user._id, profile.photos[0].value);
+                    }
                 }
                 return done(null, user);
             }

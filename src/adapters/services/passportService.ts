@@ -1,17 +1,19 @@
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { UserRepository } from "../../infrastructure/repositories/userRepository";
-import { User } from "../../domain/entities/user"; // Ensure this import matches your project structure
+import { Strategy as GoogleStrategy, Profile as GoogleProfile } from "passport-google-oauth20";
+import { UserRepository} from "../../infrastructure/repositories/userRepository";
+import { User } from "../../domain/entities/user"; 
 
 interface UserProfile {
   googleId: string;
   username: string;
   email: string;
   hashedPassword: string;
+  profileImage?: string; // Optional profile image field
 }
 
 export class PassportService {
   private userRepository: UserRepository;
+
   constructor(userRepository: UserRepository) {
     this.userRepository = userRepository;
     this.init();
@@ -41,19 +43,26 @@ export class PassportService {
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           callbackURL: "http://localhost:3001/auth/google/callback",
         },
-        async (accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
+        async (accessToken: string, refreshToken: string, profile: GoogleProfile, done: (error: any, user?: any) => void) => {
           try {
-            let user = await this.userRepository.findByGoogleId(profile.id);
+            let user: User | null = await this.userRepository.findByGoogleId(profile.id);
 
             if (!user) {
-              // if the user does not exist create a new user
+              // If the user does not exist, create a new user
               const newUser: UserProfile = {
                 googleId: profile.id,
                 username: profile.displayName,
-                email: profile.emails[0].value,
+                email: profile.emails?.[0]?.value || "",
                 hashedPassword: "",
+                profileImage: profile.photos?.[0]?.value,
               };
-              user = await this.userRepository.createUser(newUser as unknown as User); // Cast if necessary
+              user = await this.userRepository.createUser(newUser as unknown as User); 
+            } else {
+               // Update profile image if it exists in the profile
+               if (profile.photos && profile.photos.length > 0 && user._id) {
+                // Update the user's profile image in your repository or service layer
+                await this.userRepository.updateProfileImage(user._id, profile.photos[0].value);
+              }
             }
 
             return done(null, user);

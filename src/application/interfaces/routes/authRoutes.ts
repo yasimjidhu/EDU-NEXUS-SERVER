@@ -45,18 +45,16 @@ router.post('/signup', signupController.handleSignup.bind(signupController));
 router.post('/verify-otp', signupController.handleVerifyOtp.bind(signupController));
 router.post('/resendOtp', signupController.handleResendOtp.bind(signupController));
 
-
-router.post('/login', loginController.login.bind(loginController));
-router.post('/logout', loginController.logout.bind(loginController));
-router.post('/refresh-token', loginController.refreshToken.bind(loginController));
+router.post('/login',checkTokenBlacklist,loginController.login.bind(loginController));
+router.post('/logout',loginController.logout.bind(loginController));
+router.post('/refresh-token',loginController.refreshToken.bind(loginController));
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req: Request, res: Response) => {
-    console.log('response of google', res);
     res.redirect('http://localhost:5173/home');
 });
 
-router.post('/forgot-password', signupController.handleForgotPassword.bind(signupController));
-router.post('/reset-password', signupController.handleResetPassword.bind(signupController));
+router.post('/forgot-password',signupController.handleForgotPassword.bind(signupController));
+router.post('/reset-password',signupController.handleResetPassword.bind(signupController));
 
 export default router;

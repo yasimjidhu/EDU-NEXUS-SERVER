@@ -16,6 +16,7 @@ const passport_1 = __importDefault(require("passport"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const authRoutes_1 = __importDefault(require("../application/interfaces/routes/authRoutes"));
 const axios_1 = __importDefault(require("axios"));
+const consumer_1 = require("./kafka/consumer");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cookie_parser_1.default)());
@@ -50,8 +51,11 @@ exports.redisClient
 const sessionStore = new connect_redis_1.default({
     client: exports.redisClient,
 });
-app.use("/", authRoutes_1.default);
+app.use("/auth", authRoutes_1.default);
 (0, auth_db_1.default)()
+    .then(() => {
+    (0, consumer_1.startKafkaConsumer)();
+})
     .then(() => {
     app.listen(3001, () => {
         console.log("Auth service running on port 3001");

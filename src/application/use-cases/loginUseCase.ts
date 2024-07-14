@@ -4,6 +4,7 @@ import { User } from "../../domain/entities/user";
 import { ITokenRepository } from "../../domain/repositories/ITokenRepository";
 import { UserRepository } from "../../infrastructure/repositories/userRepository";
 import { v4 as uuidv4 } from 'uuid';
+import { addToBlacklist } from "../../adapters/services/redisService";
 
 export class LoginUseCase {
     constructor(
@@ -39,10 +40,10 @@ export class LoginUseCase {
 
         const user = await this.userRepository.findByEmail(email);
 
-         // Check if user is blocked
-         if (user?.isBlocked) {
-            throw new Error('Your account is blocked. Please contact support for assistance.');
-        }
+        //  Check if user is blocked
+        // if (user?.isBlocked) {
+        //     throw new Error('Your account is blocked. Please contact support for assistance.');
+        // }
 
         if (!user) {
             throw new Error('Incorrect email');
@@ -61,15 +62,14 @@ export class LoginUseCase {
         }
         return null
     }
-    async logout(req:Request,res:Response):Promise<void>{
+    async logout(req: Request, res: Response): Promise<void> {
         try {
             const refreshToken = req.cookies.refresh_token;
 
             if (refreshToken) {
-                const decoded = this.authService.verifyRefreshToken(refreshToken)
-                console.log('user id in logout for remove refreshtoken from repo',decoded)
-                // Remove the refresh token from the repository
-                await this.tokenRepository.deleteRefreshToken(decoded.userId);
+                const decoded = this.authService.verifyRefreshToken(refreshToken);
+                await addToBlacklist(refreshToken); // Blacklist the token
+                await this.tokenRepository.deleteRefreshToken(decoded.userId); // Remove the token from the repository
             }
 
             // Clear the cookies

@@ -142,6 +142,9 @@ export class SignupUseCase{
     
         return updatedUser;
     }
+    async changeUserRole(email: string): Promise<User | null> {
+        return await this.userRepository.chaneUserRole(email)
+    }
     
 
 }

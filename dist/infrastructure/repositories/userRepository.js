@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserRepositoryImpl = void 0;
+exports.UserRepositoryImpl = exports.UserModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 var UserRole;
 (function (UserRole) {
@@ -46,16 +46,19 @@ const userSchema = new mongoose_1.Schema({
     email: { type: String, required: true },
     hashedPassword: { type: String, required: false },
     role: { type: String, enum: Object.values(UserRole), default: UserRole.User },
-    isBlocked: { type: Boolean, required: false }
+    isBlocked: { type: Boolean, required: false, default: false },
+    profileImage: { type: String }
 });
 const UserModel = mongoose_1.default.model('User', userSchema);
+exports.UserModel = UserModel;
 class UserRepositoryImpl {
     createUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
             const newUser = yield UserModel.create({
                 username: user.username,
                 email: user.email,
-                hashedPassword: user.hashedPassword
+                hashedPassword: user.hashedPassword,
+                profileImage: user.profileImage !== undefined ? user.profileImage : null,
             });
             return newUser.toObject();
         });
@@ -101,6 +104,21 @@ class UserRepositoryImpl {
             }
             yield UserModel.findOneAndUpdate({ email }, { $set: { hashedPassword } });
             return user;
+        });
+    }
+    chaneUserRole(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updatedUser = yield UserModel.findOneAndUpdate({ email }, { $set: { role: 'instructor' } });
+            if (!updatedUser) {
+                return null;
+            }
+            return updatedUser.toObject();
+        });
+    }
+    updateProfileImage(userId, profileImage) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updatedUser = yield UserModel.findByIdAndUpdate(userId, { $set: { profileImage } }, { new: true });
+            return updatedUser ? updatedUser.toObject() : null;
         });
     }
 }

@@ -13,17 +13,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startKafkaConsumer = void 0;
-const express_1 = __importDefault(require("express"));
 const kafkajs_1 = require("kafkajs");
 const authUseCase_1 = require("../../application/use-cases/authUseCase");
-const userRepository_1 = require("../repositories/userRepository"); // Adjust UserRepositoryImpl and UserDocument as per your actual implementation
+const userRepository_1 = require("../repositories/userRepository");
 const generateOtpUseCase_1 = __importDefault(require("../../application/use-cases/otp/generateOtpUseCase"));
 const emailService_1 = __importDefault(require("../../presentation/services/emailService"));
 const OTPRepository_impl_1 = require("../repositories/OTPRepository.impl");
 const redic_client_1 = __importDefault(require("../database/redic-client"));
 const AuthService_1 = require("../../adapters/services/AuthService");
 const tokenRepository_1 = require("../repositories/tokenRepository");
-const app = (0, express_1.default)();
 const kafka = new kafkajs_1.Kafka({
     clientId: 'auth-service',
     brokers: ['localhost:9092'],
@@ -39,24 +37,31 @@ const signupUseCase = new authUseCase_1.SignupUseCase(userRepository, generateOt
 const startKafkaConsumer = () => __awaiter(void 0, void 0, void 0, function* () {
     console.log('auth-service consumer started');
     yield consumer.connect();
-    yield consumer.subscribe({ topic: /user-(blocked|unblocked)/ });
+    yield consumer.subscribe({ topic: 'user-status' });
+    yield consumer.subscribe({ topic: 'instructor-approval' });
     yield consumer.run({
         eachMessage: (_a) => __awaiter(void 0, [_a], void 0, function* ({ topic, message }) {
             try {
-                switch (topic) {
-                    case 'user-blocked':
-                        if (message.value) {
-                            yield handleUserBlocked(JSON.parse(message.value.toString()));
-                        }
-                        break;
-                    case 'user-unblocked':
-                        if (message.value) {
-                            yield handleUserUnblocked(JSON.parse(message.value.toString()));
-                        }
-                        break;
-                    default:
-                        console.warn(`Unknown topic: ${topic}`);
-                        break;
+                if (message.value) {
+                    const payload = JSON.parse(message.value.toString());
+                    switch (topic) {
+                        case 'user-status':
+                            if (payload.action === 'block') {
+                                yield handleUserBlocked(payload);
+                            }
+                            else if (payload.action === 'unblock') {
+                                yield handleUserUnblocked(payload);
+                            }
+                            break;
+                        case 'instructor-approval':
+                            if (payload) {
+                                yield handleInstructorApproval(payload);
+                            }
+                            break;
+                        default:
+                            console.warn(`Unknown topic: ${topic}`);
+                            break;
+                    }
                 }
             }
             catch (error) {
@@ -66,6 +71,21 @@ const startKafkaConsumer = () => __awaiter(void 0, void 0, void 0, function* () 
     });
 });
 exports.startKafkaConsumer = startKafkaConsumer;
+const shutdown = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Disconnecting consumer...');
+        yield consumer.disconnect();
+        console.log('Consumer disconnected');
+    }
+    catch (error) {
+        console.error('Error during shutdown', error);
+    }
+    finally {
+        process.exit();
+    }
+});
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 const handleUserBlocked = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield signupUseCase.blockUser(payload.email);
@@ -82,5 +102,14 @@ const handleUserUnblocked = (payload) => __awaiter(void 0, void 0, void 0, funct
     }
     catch (error) {
         console.error(`Error unblocking user ${payload.email}:`, error);
+    }
+});
+const handleInstructorApproval = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield signupUseCase.changeUserRole(payload.email);
+        console.log(`${payload.email}'s role changed to instructor`);
+    }
+    catch (error) {
+        console.error(`Error changing user role for ${payload.email}:`, error);
     }
 });

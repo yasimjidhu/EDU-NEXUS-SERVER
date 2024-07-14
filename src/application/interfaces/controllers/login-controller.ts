@@ -27,28 +27,10 @@ export class LoginController {
     try {
       const { email, password } = req.body;
       const result = await this.loginUseCase.execute(email, password);
-
-      if (this.isAdminResult(result)) {
+  
+      if (this.isAdminResult(result) || this.isUserResult(result)) {
         const { token, refreshToken, user } = result;
-        res.cookie("access_token", token, {
-          httpOnly: true,
-          secure: false,
-          sameSite: "strict",
-          maxAge: 15 * 60 * 60 * 1000,
-        });
-        res.cookie("refresh_token", refreshToken, {
-          httpOnly: true,
-          secure: false,
-          sameSite: "strict",
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-        res.json({ message: "Admin login successful", access_token: token, refresh_token: refreshToken, user });
-        return;
-      }
-
-      if (this.isUserResult(result)) {
-        const { token, refreshToken, user } = result;
-
+  
         res.cookie("access_token", token, {
           httpOnly: true,
           secure: false,
@@ -62,12 +44,11 @@ export class LoginController {
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         res.json({ message: "Login successful", access_token: token, refresh_token: refreshToken, user });
-        return;
+      } else {
+        res.status(401).json({ message: "Invalid credentials" });
       }
-
-      res.status(401).json({ message: "Invalid credentials" });
     } catch (error: any) {
-      console.log('error of login',error)
+      console.error('Error during login:', error);
       res.status(400).json({ error: error.message });
     }
   }
@@ -76,7 +57,7 @@ export class LoginController {
     await this.loginUseCase.logout(req, res);
 }
   async refreshToken(req: Request, res: Response): Promise<void> {
-    const { refresh_token } = req.cookies;
+    const { refresh_token } = req.body;
 
     if (!refresh_token) {
         res.status(403).json({ message: "No refresh token provided" });
@@ -92,7 +73,6 @@ export class LoginController {
             sameSite: "strict",
             maxAge: 15 * 60 * 1000, // 15 minutes
         });
-
         res.json({ access_token: newAccessToken });
     } catch (error: any) {
         console.error("Error refreshing token:", error.message);

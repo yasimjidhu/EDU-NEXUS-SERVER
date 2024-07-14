@@ -29,24 +29,7 @@ class LoginController {
             try {
                 const { email, password } = req.body;
                 const result = yield this.loginUseCase.execute(email, password);
-                if (this.isAdminResult(result)) {
-                    const { token, refreshToken, user } = result;
-                    res.cookie("access_token", token, {
-                        httpOnly: true,
-                        secure: false,
-                        sameSite: "strict",
-                        maxAge: 15 * 60 * 60 * 1000,
-                    });
-                    res.cookie("refresh_token", refreshToken, {
-                        httpOnly: true,
-                        secure: false,
-                        sameSite: "strict",
-                        maxAge: 7 * 24 * 60 * 60 * 1000,
-                    });
-                    res.json({ message: "Admin login successful", access_token: token, refresh_token: refreshToken, user });
-                    return;
-                }
-                if (this.isUserResult(result)) {
+                if (this.isAdminResult(result) || this.isUserResult(result)) {
                     const { token, refreshToken, user } = result;
                     res.cookie("access_token", token, {
                         httpOnly: true,
@@ -61,12 +44,13 @@ class LoginController {
                         maxAge: 7 * 24 * 60 * 60 * 1000,
                     });
                     res.json({ message: "Login successful", access_token: token, refresh_token: refreshToken, user });
-                    return;
                 }
-                res.status(401).json({ message: "Invalid credentials" });
+                else {
+                    res.status(401).json({ message: "Invalid credentials" });
+                }
             }
             catch (error) {
-                console.log('error of login', error);
+                console.error('Error during login:', error);
                 res.status(400).json({ error: error.message });
             }
         });
@@ -78,7 +62,7 @@ class LoginController {
     }
     refreshToken(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { refresh_token } = req.cookies;
+            const { refresh_token } = req.body;
             if (!refresh_token) {
                 res.status(403).json({ message: "No refresh token provided" });
                 return;

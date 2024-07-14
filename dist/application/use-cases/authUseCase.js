@@ -148,5 +148,10 @@ class SignupUseCase {
             return updatedUser;
         });
     }
+    changeUserRole(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.userRepository.chaneUserRole(email);
+        });
+    }
 }
 exports.SignupUseCase = SignupUseCase;
