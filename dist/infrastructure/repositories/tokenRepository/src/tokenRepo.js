@@ -10,38 +10,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TokenRepository = void 0;
-const index_1 = require("../index");
 class TokenRepository {
+    constructor(redisClient) {
+        this.redisClient = redisClient;
+    }
     setRefreshToken(userId, refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield index_1.redisClient.set(userId, refreshToken, { EX: 7 * 24 * 60 * 60 });
+            yield this.redisClient.set(userId, refreshToken, 'EX', 7 * 24 * 60 * 60);
         });
     }
     getRefreshToken(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return index_1.redisClient.get(userId);
+            return this.redisClient.get(userId);
         });
     }
     deleteRefreshToken(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield index_1.redisClient.del(userId);
+            yield this.redisClient.del(userId);
         });
     }
-    // Set a flag indicating that the  user's role has changed
     setRoleChangedFlag(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield index_1.redisClient.set(`role_changed:${userId}`, 'true', { EX: 24 * 60 * 60 }); // Flag expires after 24 hours
+            yield this.redisClient.set(`role_changed:${userId}`, 'true', 'EX', 24 * 60 * 60);
         });
     }
     hasRoleChanged(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const flag = yield index_1.redisClient.get(`role_changed:${userId}`);
+            const flag = yield this.redisClient.get(`role_changed:${userId}`);
             return flag === 'true';
         });
     }
     clearRoleChangedFlag(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield index_1.redisClient.del(`role_changed:${userId}`);
+            yield this.redisClient.del(`role_changed:${userId}`);
         });
     }
 }

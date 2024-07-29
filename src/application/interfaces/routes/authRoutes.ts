@@ -45,13 +45,17 @@ router.post('/signup', signupController.handleSignup.bind(signupController));
 router.post('/verify-otp', signupController.handleVerifyOtp.bind(signupController));
 router.post('/resendOtp', signupController.handleResendOtp.bind(signupController));
 
-router.post('/login',checkTokenBlacklist,loginController.login.bind(loginController));
+router.post('/login',loginController.login.bind(loginController));
 router.post('/logout',loginController.logout.bind(loginController));
 router.post('/refresh-token',loginController.refreshToken.bind(loginController));
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req: Request, res: Response) => {
+//     res.redirect('http://localhost:5173/home');
+// });
+
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req: Request, res: Response) => {
-    res.redirect('http://localhost:5173/home');
+    res.redirect(`http://localhost:5173/auth-success?user=${JSON.stringify(req.user)}`);
 });
 
 router.post('/forgot-password',signupController.handleForgotPassword.bind(signupController));

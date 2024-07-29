@@ -78,7 +78,7 @@ export class SignupController {
             sameSite: 'strict',
             maxAge: 15 * 60 * 1000
           });
-          res.status(200).json({ success: true, message: 'Otp verified successfully',email });          
+          res.status(200).json({ success: true, message: 'Otp verified successfully',email,user });          
         } else {
 
           res.status(400).json({ message: 'OTP verification failed' });

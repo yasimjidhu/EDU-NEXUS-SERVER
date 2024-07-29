@@ -26,6 +26,7 @@ class LoginController {
     }
     login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('login called', req.body);
             try {
                 const { email, password } = req.body;
                 const result = yield this.loginUseCase.execute(email, password);

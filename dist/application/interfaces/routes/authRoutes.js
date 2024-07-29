@@ -19,7 +19,6 @@ const passport_1 = __importDefault(require("passport"));
 const passportService_1 = require("../../../adapters/services/passportService");
 const tokenRepository_1 = require("../../../infrastructure/repositories/tokenRepository");
 const refreshTokenMiddleware_1 = __importDefault(require("../../../infrastructure/middleware/refreshTokenMiddleware"));
-const statusCheck_1 = require("../../../infrastructure/middleware/statusCheck");
 const refreshTokenUseCase_1 = require("../../use-cases/refreshTokenUseCase");
 // Dependency injection setup
 const userRepository = new userRepository_1.UserRepositoryImpl();
@@ -41,12 +40,15 @@ const router = (0, express_1.Router)();
 router.post('/signup', signupController.handleSignup.bind(signupController));
 router.post('/verify-otp', signupController.handleVerifyOtp.bind(signupController));
 router.post('/resendOtp', signupController.handleResendOtp.bind(signupController));
-router.post('/login', statusCheck_1.checkTokenBlacklist, loginController.login.bind(loginController));
+router.post('/login', loginController.login.bind(loginController));
 router.post('/logout', loginController.logout.bind(loginController));
 router.post('/refresh-token', loginController.refreshToken.bind(loginController));
 router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
+// router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req: Request, res: Response) => {
+//     res.redirect('http://localhost:5173/home');
+// });
 router.get('/google/callback', passport_1.default.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req, res) => {
-    res.redirect('http://localhost:5173/home');
+    res.redirect(`http://localhost:5173/auth-success?user=${JSON.stringify(req.user)}`);
 });
 router.post('/forgot-password', signupController.handleForgotPassword.bind(signupController));
 router.post('/reset-password', signupController.handleResetPassword.bind(signupController));

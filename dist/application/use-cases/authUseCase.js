@@ -150,7 +150,13 @@ class SignupUseCase {
     }
     changeUserRole(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userRepository.chaneUserRole(email);
+            const user = yield this.userRepository.chaneUserRole(email);
+            if (!user) {
+                return null;
+            }
+            yield this.tokenRepository.setRoleChangedFlag(user._id);
+            console.log('user role changed set in token repository');
+            return user;
         });
     }
 }

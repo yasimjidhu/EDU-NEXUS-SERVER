@@ -143,8 +143,12 @@ export class SignupUseCase{
         return updatedUser;
     }
     async changeUserRole(email: string): Promise<User | null> {
-        return await this.userRepository.chaneUserRole(email)
+        const user =  await this.userRepository.chaneUserRole(email)
+        if(!user){
+            return null
+        }
+        await this.tokenRepository.setRoleChangedFlag(user._id!)
+        console.log('user role changed set in token repository')
+        return user
     }
-    
-
 }

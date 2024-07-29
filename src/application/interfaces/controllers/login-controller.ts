@@ -24,6 +24,7 @@ export class LoginController {
   }
 
   async login(req: Request, res: Response): Promise<void> {
+    console.log('login called',req.body)
     try {
       const { email, password } = req.body;
       const result = await this.loginUseCase.execute(email, password);

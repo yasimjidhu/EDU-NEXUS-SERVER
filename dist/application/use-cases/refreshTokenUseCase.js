@@ -18,14 +18,27 @@ class RefreshTokenUseCase {
     execute(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
             const decoded = this.authService.verifyRefreshToken(refreshToken);
-            // Generate new access token using decoded data
-            const newAccessToken = this.authService.generateAccessToken({
-                _id: decoded.userId,
-                username: decoded.username,
-                email: decoded.email,
-                role: decoded.role,
-                hashedPassword: '',
-            });
+            const hasRoleChanged = yield this.tokenRepository.hasRoleChanged(decoded.userId);
+            let newAccessToken;
+            if (hasRoleChanged) {
+                newAccessToken = this.authService.generateAccessToken({
+                    _id: decoded.userId,
+                    username: decoded.username,
+                    email: decoded.email,
+                    role: 'instructor',
+                    hashedPassword: ''
+                });
+            }
+            else {
+                // Generate new access token using decoded data
+                newAccessToken = this.authService.generateAccessToken({
+                    _id: decoded.userId,
+                    username: decoded.username,
+                    email: decoded.email,
+                    role: decoded.role,
+                    hashedPassword: '',
+                });
+            }
             return newAccessToken;
         });
     }
