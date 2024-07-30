@@ -1,12 +1,12 @@
 import { Kafka,  EachMessagePayload } from 'kafkajs';
-import { SignupUseCase } from '../../application/use-cases/authUseCase';
-import { UserRepositoryImpl } from '../repositories/userRepository'; 
-import GenerateOtp from '../../application/use-cases/otp/generateOtpUseCase';
-import EmailService from '../../presentation/services/emailService';
-import { OTPRepositoryImpl } from '../repositories/OTPRepository.impl';
-import RedisClient from '../database/redic-client';
-import { AuthService } from '../../adapters/services/AuthService';
-import { TokenRepository } from '../repositories/tokenRepository';
+import { SignupUseCase } from '@usecases/authUseCase';
+import { UserRepositoryImpl } from '@repositories/userRepository';
+import {GenerateOtp} from "@usecases/generateOtpUseCase"
+import EmailService from '@services/emailService';
+import { OTPRepositoryImpl } from '@repositories/OTPRepository.impl';
+import RedisClient from '@database/redis-client';
+import { AuthService } from '@services/AuthService';
+import { TokenRepository } from '@repositories/tokenRepository';
 
 
 const kafka = new Kafka({

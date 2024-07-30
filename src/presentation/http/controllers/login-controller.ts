@@ -1,17 +1,17 @@
 import { Request, Response } from "express";
-import { LoginUseCase } from "../../use-cases/loginUseCase";
-import { UserRepository } from "../../../infrastructure/repositories/userRepository";
-import { AuthService } from "../../../adapters/services/AuthService";
-import { User } from "../../../domain/entities/user";
-import { TokenRepository } from "../../../infrastructure/repositories/tokenRepository";
-import { RefreshTokenUseCase } from "../../use-cases/refreshTokenUseCase";
+import { LoginUseCase } from "@usecases/loginUseCase";
+import { IUserRepository } from "@interfaces/repositories/IUserRepository";
+import { AuthService } from "@services/AuthService";
+import { User } from "@entities/user";
+import { TokenRepository } from "@repositories/tokenRepository";
+import { RefreshTokenUseCase } from "@usecases/refreshTokenUseCase";
 
 export class LoginController {
   constructor(
     private loginUseCase: LoginUseCase,
     private refreshTokenUseCase:RefreshTokenUseCase,
     private authService: AuthService,
-    private userRepository: UserRepository,
+    private userRepository: IUserRepository,
     private tokenRepository:TokenRepository
   ) {}
 
@@ -24,7 +24,6 @@ export class LoginController {
   }
 
   async login(req: Request, res: Response): Promise<void> {
-    console.log('login called',req.body)
     try {
       const { email, password } = req.body;
       const result = await this.loginUseCase.execute(email, password);
@@ -54,8 +53,8 @@ export class LoginController {
     }
   }
 
-  async logout(req: Request, res: Response): Promise<void> {
-    await this.loginUseCase.logout(req, res);
+async logout(req: Request, res: Response): Promise<void> {
+  await this.loginUseCase.logout(req, res);
 }
   async refreshToken(req: Request, res: Response): Promise<void> {
     const { refresh_token } = req.body;

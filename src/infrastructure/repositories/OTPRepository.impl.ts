@@ -1,7 +1,7 @@
 import { createClient } from "redis";
-import { IOTPRepository } from "./otpRepository";
+import { IOTPRepository } from "@interfaces/repositories/IOtpRepository";
 
-class OTPRepositoryImpl implements IOTPRepository{
+export class OTPRepositoryImpl implements IOTPRepository{
     private redisClient;
 
     constructor(redisClient:ReturnType<typeof createClient>){
@@ -24,5 +24,3 @@ class OTPRepositoryImpl implements IOTPRepository{
         return storedOtp === otp
     }
 }
-
-export {OTPRepositoryImpl}

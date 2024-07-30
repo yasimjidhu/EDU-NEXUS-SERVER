@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import { ITokenRepository } from '../../domain/repositories/ITokenRepository';
-import { AuthService } from '../../adapters/services/AuthService';
+import { ITokenRepository } from '../../../domain/repositories/ITokenRepository';
+import { AuthService } from '../../../adapters/services/AuthService';
 
 
 class TokenMiddlewares {

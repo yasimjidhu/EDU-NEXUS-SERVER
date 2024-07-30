@@ -1,15 +1,16 @@
 import { Request, Response } from "express";
-import { AuthService } from "../../adapters/services/AuthService";
-import { User } from "../../domain/entities/user";
-import { ITokenRepository } from "../../domain/repositories/ITokenRepository";
-import { UserRepository } from "../../infrastructure/repositories/userRepository";
+import { User } from "@entities/user";
 import { v4 as uuidv4 } from 'uuid';
-import { addToBlacklist } from "../../adapters/services/redisService";
+import { addToBlacklist } from "@services/redisService";
+import { IAuthService } from "@interfaces/services/IAuthService";
+import { ITokenRepository } from '@interfaces/repositories/ITokenRepository';
+import { IUserRepository } from "@interfaces/repositories/IUserRepository";
+import { ILoginUseCase } from "@interfaces/usecases/ILoginUseCase";
 
-export class LoginUseCase {
+export class LoginUseCase implements ILoginUseCase{
     constructor(
-        private userRepository: UserRepository,
-        private authService: AuthService,
+        private userRepository: IUserRepository,
+        private authService: IAuthService,
         private tokenRepository:ITokenRepository
     ) { }
 
@@ -40,16 +41,11 @@ export class LoginUseCase {
 
         const user = await this.userRepository.findByEmail(email);
 
-        //  Check if user is blocked
-        // if (user?.isBlocked) {
-        //     throw new Error('Your account is blocked. Please contact support for assistance.');
-        // }
-
         if (!user) {
             throw new Error('Incorrect email');
         }
 
-        const passwordMatch = await this.authService.comparePassword(password, user.hashedPassword);
+        const passwordMatch = await this.authService.comparePassword(password, user.hashedPassword!);
         if (!passwordMatch) {
             throw new Error('Incorrect password');
         }

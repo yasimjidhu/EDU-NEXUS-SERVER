@@ -9,4 +9,4 @@ export class OTP {
       this.email = email;
       this.otp = otp;
     }
-  }
+}

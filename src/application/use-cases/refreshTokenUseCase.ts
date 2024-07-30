@@ -1,7 +1,8 @@
-import { ITokenRepository } from "../../domain/repositories/ITokenRepository";
-import { AuthService } from "../../adapters/services/AuthService";
+import { ITokenRepository } from "@interfaces/repositories/ITokenRepository";
+import { AuthService } from "@services/AuthService";
+import { IRefreshTokenUseCase } from "@interfaces/usecases/IRefreshTokenUseCase";
 
-export class RefreshTokenUseCase {
+export class RefreshTokenUseCase implements IRefreshTokenUseCase{
     constructor(
         private tokenRepository: ITokenRepository,
         private authService: AuthService

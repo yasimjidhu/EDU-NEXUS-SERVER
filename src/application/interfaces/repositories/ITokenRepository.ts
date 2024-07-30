@@ -4,4 +4,6 @@ export interface ITokenRepository {
     deleteRefreshToken(userId: string): Promise<void>;
     setRoleChangedFlag(userId: string): Promise<void>;
     hasRoleChanged(userId: string): Promise<boolean>;
-  }
+    clearRoleChangedFlag(userId: string): Promise<void>;
+}
+  

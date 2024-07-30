@@ -1,8 +1,8 @@
-import { isTokenBlacklisted } from '../../adapters/services/redisService';
+import { isTokenBlacklisted } from '../../../adapters/services/redisService';
 import { Request, Response, NextFunction } from 'express';
 import jwt, { Secret } from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import { redisClient } from '..';
+import { redisClient } from '../../../infrastructure';
 
 dotenv.config()
 

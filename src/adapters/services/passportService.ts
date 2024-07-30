@@ -1,20 +1,20 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile as GoogleProfile } from "passport-google-oauth20";
-import { UserRepository} from "../../infrastructure/repositories/userRepository";
-import { User } from "../../domain/entities/user"; 
+import { IUserRepository} from "@interfaces/repositories/IUserRepository";
+import { User } from "@entities/user"; 
 
 interface UserProfile {
   googleId: string;
   username: string;
   email: string;
   hashedPassword: string;
-  profileImage?: string; // Optional profile image field
+  profileImage?: string; 
 }
 
 export class PassportService {
-  private userRepository: UserRepository;
+  private userRepository: IUserRepository;
 
-  constructor(userRepository: UserRepository) {
+  constructor(userRepository: IUserRepository) {
     this.userRepository = userRepository;
     this.init();
   }
@@ -60,7 +60,6 @@ export class PassportService {
             } else {
                // Update profile image if it exists in the profile
                if (profile.photos && profile.photos.length > 0 && user._id) {
-                // Update the user's profile image in your repository or service layer
                 await this.userRepository.updateProfileImage(user._id, profile.photos[0].value);
               }
             }

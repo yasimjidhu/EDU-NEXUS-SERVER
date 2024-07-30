@@ -1,6 +1,7 @@
+import { IEmailService } from '@interfaces/services/IEmailService';
 import nodemailer from 'nodemailer'
 
-class EmailService{
+class EmailService implements IEmailService{
     private transporter;
 
     constructor(){
@@ -30,4 +31,4 @@ class EmailService{
     }
 }
 
-export default EmailService
+export default EmailService 

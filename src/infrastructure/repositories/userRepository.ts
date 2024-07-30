@@ -1,19 +1,19 @@
-    import mongoose,{Schema,Document,Model} from 'mongoose'
-    import { User } from '../../domain/entities/user'
+import mongoose,{Schema,Document,Model} from 'mongoose'
+import { User } from '@entities/user'
+import { IUserRepository } from '@interfaces/repositories/IUserRepository';
 
     enum UserRole{
         Admin = 'admin',
         User = 'student',
         Instructor = 'instructor'
     }
-
-     interface UserDocument extends Document {
+    interface UserDocument extends Document {
         googleId: string;
         username: string;
         email: string;
         hashedPassword: string;
         profileImage?: string;  
-      }
+    }
 
    
     const userSchema : Schema = new Schema({
@@ -30,18 +30,8 @@
 
     export { UserModel, UserDocument };
 
-    export interface UserRepository{
-        createUser(user:User):Promise<User>;
-        updateUser(user:User):Promise<User>;
-        findByEmail(email:string):Promise<User|null>;
-        findById(id:string):Promise<User|null>;
-        findByGoogleId(id:string):Promise<User|null>;
-        resetPassword(email:string,hashedPassword:any):Promise<User|null>;
-        chaneUserRole(email:string):Promise<User|null>;
-        updateProfileImage(userId: string, profileImage: string): Promise<User | null>; 
-    }
 
-    export class UserRepositoryImpl implements UserRepository{
+    export class UserRepositoryImpl implements IUserRepository{
         async createUser(user: User): Promise<User> {
             const newUser = await UserModel.create({
                 username: user.username,

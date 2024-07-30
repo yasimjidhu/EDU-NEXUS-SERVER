@@ -1,4 +1,4 @@
-import { ITokenRepository } from "../../domain/repositories/ITokenRepository";
+import { ITokenRepository } from "@interfaces/repositories/ITokenRepository"
 import { redisClient } from "../index"
 
 

@@ -1,12 +1,13 @@
-import { IOTPRepository } from "../../../infrastructure/repositories/otpRepository";
-import { UserRepository } from "../../../infrastructure/repositories/userRepository";
-import { User } from "../../../domain/entities/user";
 import bcrypt from 'bcryptjs';
+import { User } from "@entities/user"
+import { IOTPRepository } from "@interfaces/repositories/IOtpRepository";
+import { IUserRepository } from "@interfaces/repositories/IUserRepository";
+import { IVerifyOtpUseCase } from "@interfaces/usecases/IVerifyOtpUseCase";
 
-class VerifyOTP {
+class VerifyOTP implements IVerifyOtpUseCase{
     constructor(
         private otpRepository: IOTPRepository,
-        private userRepository: UserRepository
+        private userRepository: IUserRepository
     ) {}
 
     async execute(email: string, otp: string, username: string | null, password: string | null): Promise<User | string | boolean> {
@@ -14,8 +15,7 @@ class VerifyOTP {
             throw new Error('OTP has expired');
         }
 
-        const isValid = await this.otpRepository.verifyOTP(email, otp);
-        console.log('otp is isValid',isValid)
+        const isValid = await this.otpRepository.verifyOTP(email, otp)
 
         if (!isValid) {
             return false
@@ -36,7 +36,7 @@ class VerifyOTP {
         return 'Username and password are required for registration.';
     }
 
-    private async hashPassword(password: string): Promise<string> {
+    async hashPassword(password: string): Promise<string> {
         const saltRounds = 10;
         return bcrypt.hash(password, saltRounds);
     }

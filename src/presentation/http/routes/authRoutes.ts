@@ -1,21 +1,19 @@
-import { Request, Router, Response } from "express";
-import { SignupController } from "../controllers/auth-controller";
-import { UserRepositoryImpl } from "../../../infrastructure/repositories/userRepository";
-import { OTPRepositoryImpl } from "../../../infrastructure/repositories/OTPRepository.impl";
-import { SignupUseCase } from "../../use-cases/authUseCase";
-import { AuthService } from "../../../adapters/services/AuthService";
-import { LoginUseCase } from "../../use-cases/loginUseCase";
-import { LoginController } from "../controllers/login-controller";
-import GenerateOtp from "../../use-cases/otp/generateOtpUseCase";
-import verifyOTP from "../../use-cases/otp/verifyOtpUseCase";
-import EmailService from "../../../presentation/services/emailService";
-import RedisClient from '../../../infrastructure/database/redic-client'
 import passport from "passport";
-import { PassportService } from "../../../adapters/services/passportService";
-import { TokenRepository } from "../../../infrastructure/repositories/tokenRepository";
-import TokenMiddlewares from "../../../infrastructure/middleware/refreshTokenMiddleware";
-import { checkTokenBlacklist } from "../../../infrastructure/middleware/statusCheck";
-import { RefreshTokenUseCase } from "../../use-cases/refreshTokenUseCase";
+import { Request, Router, Response } from "express";
+import { SignupController } from "@controllers/auth-controller";
+import { LoginController } from "@controllers/login-controller";
+import { UserRepositoryImpl } from "@repositories/userRepository";
+import { OTPRepositoryImpl } from "@repositories/OTPRepository.impl";
+import { TokenRepository } from "@repositories/tokenRepository";
+import { RefreshTokenUseCase } from "@usecases/refreshTokenUseCase";
+import GenerateOtp from "@usecases/generateOtpUseCase";
+import { SignupUseCase } from "@usecases/authUseCase";
+import verifyOTP from "@usecases/verifyOtpUseCase";
+import { AuthService } from "@services/AuthService";
+import { LoginUseCase } from "@usecases/loginUseCase";
+import { PassportService } from "@services/passportService";
+import EmailService from "@services/emailService";
+import RedisClient from '@database/redis-client'
 
 // Dependency injection setup
 const userRepository = new UserRepositoryImpl();
@@ -27,8 +25,6 @@ const authService = new AuthService();
 
 const otpRepository = new OTPRepositoryImpl(RedisClient);
 const tokenRepository = new TokenRepository();
-
-const tokenMiddleware = new TokenMiddlewares(tokenRepository, authService);
 
 const loginUseCase = new LoginUseCase(userRepository, authService, tokenRepository);
 const refreshTokenUseCase = new RefreshTokenUseCase(tokenRepository,authService)
@@ -50,10 +46,6 @@ router.post('/logout',loginController.logout.bind(loginController));
 router.post('/refresh-token',loginController.refreshToken.bind(loginController));
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-// router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req: Request, res: Response) => {
-//     res.redirect('http://localhost:5173/home');
-// });
-
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:5173' }), (req: Request, res: Response) => {
     res.redirect(`http://localhost:5173/auth-success?user=${JSON.stringify(req.user)}`);
 });

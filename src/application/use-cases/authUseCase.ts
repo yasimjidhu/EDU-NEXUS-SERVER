@@ -1,18 +1,20 @@
-import {User} from '../../domain/entities/user'
-import { UserRepository } from "../../infrastructure/repositories/userRepository";
-import GenerateOtp from './otp/generateOtpUseCase';
+import {User} from '@entities/user'
+import { IUserRepository } from "@interfaces/repositories/IUserRepository";
+import GenerateOtp from '@usecases/generateOtpUseCase';
 import bcrypt from 'bcryptjs'
-import { AuthService } from '../../adapters/services/AuthService';
-import { ITokenRepository } from '../../domain/repositories/ITokenRepository';
+import { IAuthService } from '@interfaces/services/IAuthService';
+import { ITokenRepository } from '@interfaces/repositories/ITokenRepository';
 import jwt, { JwtPayload } from 'jsonwebtoken'
-import { redisClient } from '../../infrastructure/index';
+import { redisClient } from 'src/infrastructure';
+import { ISignupUseCase } from '@interfaces/usecases/IAuthUseCase';
 
 
-export class SignupUseCase{
+
+export class SignupUseCase implements ISignupUseCase{
     constructor(
-        private userRepository:UserRepository,
+        private userRepository:IUserRepository,
         private generateOtpUseCase:GenerateOtp,
-        private authService:AuthService,
+        private authService:IAuthService,
         private tokenRepository:ITokenRepository
     ){}
 

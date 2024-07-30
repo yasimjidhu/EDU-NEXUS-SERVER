@@ -1,14 +1,15 @@
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
 import { User } from '../../domain/entities/user';
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import { IAuthService } from '@interfaces/services/IAuthService';
 
 dotenv.config();
 
 const ACCESS_TOKEN_SECRET: Secret = process.env.JWT_ACCESS_TOKEN_SECRET || '';
 const REFRESH_TOKEN_SECRET: Secret = process.env.JWT_REFRESH_TOKEN_SECRET || '';
 
-export class AuthService {
+export class AuthService implements IAuthService {
   async comparePassword(password: string, hashedPassword: any): Promise<boolean> {
     return await bcrypt.compare(password, hashedPassword);
   }

@@ -4,7 +4,20 @@
       "outDir": "./dist",
       "rootDir": "./src",
       "typeRoots": ["./node_modules/@types", "./src/types"],
+      "baseUrl": ".",
+      "paths": {
+        "@entities/*":["src/domain/entities/*"],
+        "@services/*":["src/adapters/services/*"],
+        "@repositories/*":["src/infrastructure/repositories/*"],
+        "@routes/*":["src/presentation/http/routes/*"],
+        "@controllers/*":["src/presentation/http/controllers/*"],
+        "@middlewares/*":["src/presentation/http/middleware/*"],
+        "@usecases/*":["src/application/use-cases/*"],
+        "@interfaces/*":["src/application/interfaces/*"],
+        "@database/*":["src/infrastructure/database/*"]
+      }
     },
-    "include": ["src/**/*.ts"]
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"]
   }
   

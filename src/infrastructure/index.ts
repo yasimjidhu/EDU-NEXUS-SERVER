@@ -2,23 +2,21 @@ import express from "express";
 import cors from 'cors'
 import bodyParser from "body-parser";
 import session from "express-session";
-import connectDB from "./database/auth-db";
+import connectDB from "@database/auth-db";
 import { createClient } from "redis";
-import connectRedis from "connect-redis";
 import dotenv from "dotenv";
 import RedisStore from "connect-redis";
 import passport from 'passport'
 import cookieParser from 'cookie-parser'
-import RedisClient from "../infrastructure/database/redic-client";
-import authRouter from "../application/interfaces/routes/authRoutes";
+import authRouter from "@routes/authRoutes";
 import axios from "axios";
 import { startKafkaConsumer } from "./kafka/consumer";
 
 dotenv.config();
 
 const app = express();
-app.use(cookieParser())
 
+app.use(cookieParser())
 app.use(
   session({
     secret: "secret",
@@ -73,3 +71,4 @@ connectDB()
   .catch((err) => {
     console.log("error occured while connecting auth-db");
   });
+ 

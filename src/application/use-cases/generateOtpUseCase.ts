@@ -1,12 +1,13 @@
 import otpGenerator from 'otp-generator'
-import {IOTPRepository} from '../../../infrastructure/repositories/otpRepository';
-import EmailService from '../../../presentation/services/emailService'
+import {IOTPRepository} from '@interfaces/repositories/IOtpRepository';
+import { IEmailService } from '@interfaces/services/IEmailService';
+import { IGenerateOtp } from '@interfaces/usecases/IGenerateOtp';
 
-class GenerateOtp{
+export class GenerateOtp implements IGenerateOtp{
     private otpRepository:IOTPRepository;
-    private emailService:EmailService;
+    private emailService:IEmailService;
 
-    constructor(otpRepository:IOTPRepository,emailService:EmailService){
+    constructor(otpRepository:IOTPRepository,emailService:IEmailService){
         this.otpRepository = otpRepository;
         this.emailService = emailService
     }
