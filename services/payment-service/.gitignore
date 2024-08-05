@@ -1,0 +1,33 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Build output
+/dist/
+/build/
+/coverage/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# ESLint and Prettier configuration files (optional, if you want to share these with collaborators)
+!.eslintignore
+!.prettierrc
+!.eslint.config.cjs
+!.eslint.config.mjs

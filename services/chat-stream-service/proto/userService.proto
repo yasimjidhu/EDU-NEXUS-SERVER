@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package userservice;
+
+service UserService {
+  rpc GetInstructorsByIds (GetUserByIdsRequest) returns (GetUserByIdsResponse) {};
+  rpc GetStudentsByIds (GetUserByIdsRequest) returns (GetUserByIdsResponse){};
+}
+
+message GetUserByIdsRequest {
+  repeated string user_ids = 1;
+}
+
+message User {
+  string _id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
+  string role = 5;
+  Profile profile = 6;
+  Contact contact = 7;
+  string qualification = 8;
+  string cv = 9;
+}
+
+message Profile {
+  string avatar = 1;
+  string dateOfBirth = 2;
+  string gender = 3;
+}
+
+message Contact {
+  string address = 1;
+  string phone = 2;
+  string social = 3;
+}
+
+message GetUserByIdsResponse {
+  repeated User users = 1;
+}

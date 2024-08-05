@@ -1,0 +1,29 @@
+{
+  "name": "auth-middleware-with-redis",
+  "version": "1.0.5",
+  "type": "module",
+  "description": "this package contain all middlewares for user authentication and authorization",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "express",
+    "middleware",
+    "auth",
+    "token"
+  ],
+  "author": "yasim dirshad",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "ioredis": "^4.28.5",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "@types/ioredis": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.6"
+  }
+}

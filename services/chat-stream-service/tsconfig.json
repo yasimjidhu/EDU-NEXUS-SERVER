@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+        "@entities/*":["src/domain/entities/*"],
+        "@repositories/*":["src/infrastructure/repositories/*"],
+        "@routes/*":["src/presentation/routes/*"],
+        "@controllers/*":["src/presentation/controllers/*"],
+        "@middlewares/*":["src/presentation/middleware/*"],
+        "@usecases/*":["src/application/useCases/*"],
+        "@interfaces/*":["src/application/interfaces/*"],
+        // "@database/*":["src/infrastructure/database/*"]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules"
+  ]
+}
