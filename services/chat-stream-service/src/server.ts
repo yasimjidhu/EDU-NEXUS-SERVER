@@ -12,6 +12,7 @@ import { ChatUseCase} from './application/useCases/chatUseCase'
 import { ChatService } from './infrastructure/services/ChatService';
 import { UserServiceClient } from './infrastructure/grpc/client';
 import { ChatRepository } from './infrastructure/repositories/ChatRepository';
+import { Message } from '@entities/message';
 
 dotenv.config();
 
@@ -19,15 +20,6 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Content-Type,Authorization',
-};
-
-app.use(cors(corsOptions));
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -45,7 +37,7 @@ const chatService = new ChatService(chatRepository);
 const userServiceClient = new UserServiceClient();
 const chatUseCase = new ChatUseCase(chatService, userServiceClient);
 
-io.use((socket: Socket, next) => {
+io.use((socket: Socket, next:(err?:any)=>void) => {
   const token = socket.handshake.auth.token;
   if (!token) {
     console.log('no token')
@@ -81,24 +73,24 @@ io.on('connection', (socket: Socket) => {
     console.log('user disconnected',email);
   });
 
-  socket.on('join', (conversationId) => {
+  socket.on('join', (conversationId:string) => {
     socket.join(conversationId);
     console.log(`User joined room ${conversationId}`);
   });
 
-  socket.on('leave', (conversationId) => {
+  socket.on('leave', (conversationId:string) => {
     socket.leave(conversationId);
     console.log(`User left room ${conversationId}`);
   });
 
-  socket.on('message', (message) => {
+  socket.on('message', (message:Message) => {
     console.log(`Message received from ${message.senderId}:`, message);
     const { conversationId } = message;
     io.to(conversationId).emit('message', message);
     console.log(`Message sent to room ${conversationId}:`, message);
   });
 
-  socket.on('messageDelivered',async(messageId)=>{
+  socket.on('messageDelivered',async(messageId:string)=>{
     // update message status to delivered
     try{
       const updatedMessage = await chatUseCase.updateMessageStatus(messageId,'delivered')
@@ -108,7 +100,7 @@ io.on('connection', (socket: Socket) => {
     }
   })
 
-  socket.on('messageRead',async(messageId)=>{
+  socket.on('messageRead',async(messageId:string)=>{
     // updated message status to read
     try {
       const updatedMessage = await chatUseCase.updateMessageStatus(messageId,'read')
@@ -118,7 +110,7 @@ io.on('connection', (socket: Socket) => {
     }
   })
  
-  socket.on('typing', (data) => {
+  socket.on('typing', (data:{conversationId:string,userId:string,isTyping:boolean}) => {
     console.log('user typing', data);
     const { conversationId, userId, isTyping } = data;
     socket.to(conversationId).emit('typing', { userId, isTyping });

@@ -6,5 +6,4 @@ export interface Message {
   audio?:string;
   status: string,
   createdAt: Date;
-  _id?:string;
 }

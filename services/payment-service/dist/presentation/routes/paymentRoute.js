@@ -10,11 +10,14 @@ const paymentDb_1 = __importDefault(require("../../infrastructure/database/payme
 const paymentUseCase_1 = require("../../application/usecases/paymentUseCase");
 const paymentRepository_1 = require("../../infrastructure/repositories/paymentRepository");
 const paymentController_1 = require("../controllers/paymentController");
+const producer_1 = require("../../infrastructure/messaging/kafka/producer");
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+// messaging
+const producer = new producer_1.KafkaProducer();
 const stripe = new stripe_1.default(stripeSecretKey, { apiVersion: '2024-06-20' });
 const paymentRepository = new paymentRepository_1.PaymentRepositoryImpl(paymentDb_1.default);
-const paymentUseCase = new paymentUseCase_1.PaymentUseCase(paymentRepository, stripe);
+const paymentUseCase = new paymentUseCase_1.PaymentUseCase(paymentRepository, stripe, producer);
 const paymentController = new paymentController_1.PaymentController(paymentUseCase);
 exports.router = (0, express_1.Router)();
-exports.router.post('/payment-intent', paymentController.createPaymentIntent.bind(paymentController));
-exports.router.put('/status/:id', paymentController.updatePaymentStatus.bind(paymentController));
+exports.router.post('/create-checkout-session', paymentController.createCheckoutSession.bind(paymentController));
+exports.router.post('/complete-purchase', paymentController.completePurchase.bind(paymentController));

@@ -1,10 +1,6 @@
 import { Kafka, KafkaMessage } from "kafkajs";
 import { EmailService } from "../services/emailService";
-
-const kafka = new Kafka({
-    clientId: 'user-service',
-    brokers: ['localhost:9092']
-});
+import { kafka } from "./kafka";
 
 const consumer = kafka.consumer({ groupId: 'notification-group' });
 const emailService = new EmailService();

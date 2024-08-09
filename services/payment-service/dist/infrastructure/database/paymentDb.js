@@ -8,11 +8,11 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const pg_1 = require("pg");
 dotenv_1.default.config();
 const dbConfig = {
-    user: 'psql',
+    user: process.env.POSTGRESS_DB_USER,
     host: 'localhost',
-    database: 'payments',
+    database: process.env.PAYMENTS_DB_NAME,
     password: process.env.PAYMENTS_DB_PASSWORD,
-    port: 5432,
+    port: process.env.POSTGRESS_DB_PORT ? parseInt(process.env.POSTGRESS_DB_PORT, 10) : 5432,
 };
 const pool = new pg_1.Pool(dbConfig);
 const StartPaymentDb = async () => {

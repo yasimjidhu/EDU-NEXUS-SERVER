@@ -16,15 +16,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Content-Type,Authorization',
-};
-app.use(cors(corsOptions));
-
-
 app.use('/payment',router)
 
 StartPaymentDb()

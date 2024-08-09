@@ -6,22 +6,20 @@ class PaymentController {
     constructor(paymentUseCase) {
         this.paymentUseCase = paymentUseCase;
     }
-    async createPaymentIntent(req, res) {
-        const { userId, courseId, amount, currency } = req.body;
+    async createCheckoutSession(req, res) {
         try {
-            const result = await this.paymentUseCase.createPaymentIntent(userId, courseId, amount, currency);
+            const result = await this.paymentUseCase.createCheckoutSession(req.body);
             res.status(200).json(result);
         }
         catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
-    async updatePaymentStatus(req, res) {
-        const { id } = req.params;
-        const status = req.body;
+    async completePurchase(req, res) {
+        const { sessionId } = req.body;
         try {
-            await this.paymentUseCase.updatePaymentStatus(id, status);
-            res.status(200).json({ message: 'Payment status updated' });
+            const result = await this.paymentUseCase.create(sessionId);
+            res.status(200).json({ result, success: true });
         }
         catch (error) {
             res.status(500).json({ error: error.message });

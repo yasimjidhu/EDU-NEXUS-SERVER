@@ -3,11 +3,11 @@ import { Pool, PoolConfig } from 'pg';
 dotenv.config()
 
 const dbConfig: PoolConfig = {
-  user: process.env.POSTGRESS_DB_USER,
-  host: 'localhost',
-  database: process.env.PAYMENTS_DB_NAME, 
-  password: process.env.PAYMENTS_DB_PASSWORD,
-  port: process.env.POSTGRESS_DB_PORT ? parseInt(process.env.POSTGRESS_DB_PORT, 10) : 5432,
+  user: process.env.POSTGRES_USER,
+  host: 'postgres',
+  database: process.env.POSTGRES_DB, 
+  password: process.env.POSTGRES_PASSWORD,
+  port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 5432,
 };
 
 const pool = new Pool(dbConfig);
