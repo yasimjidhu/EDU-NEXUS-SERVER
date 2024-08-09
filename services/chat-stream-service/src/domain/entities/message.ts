@@ -3,6 +3,7 @@ export interface Message {
   conversationId: string;
   senderId: string;
   text: string;
+  audio?:string;
   status: string,
   createdAt: Date;
   _id?:string;

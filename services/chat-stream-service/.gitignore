@@ -6,3 +6,4 @@ clean-js.js
 eslintrc.json
 .eslintignore
 dist/
+src/generated/

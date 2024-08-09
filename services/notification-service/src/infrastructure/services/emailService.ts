@@ -117,4 +117,31 @@ export class EmailService implements EmailRepository {
 
         await this.transporter.sendMail(mailOptions);
     }
+    async sendPaymentFailureEmail(email: string, courseName: string, amount: number, currency: string): Promise<void> {
+        const mailOptions = {
+            from: `"Edu-Nexus The E-learning Platform" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Payment Failure Notification',
+            text: `Dear User,\n\nWe regret to inform you that your payment for the course "${courseName}" has failed. The amount was ${amount} ${currency}. Please try again or contact our support team if you need assistance.\n\nBest regards,\nThe Edu-Nexus Team`,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <div style="background-color: #f7f7f7; padding: 20px; border-radius: 10px;">
+                        <h1 style="color: #f44336;">Payment Failure Notification</h1>
+                        <p>Dear User,</p>
+                        <p>We regret to inform you that your payment for the course <strong>"${courseName}"</strong> has failed.</p>
+                        <p>Payment details:</p>
+                        <ul>
+                            <li>Amount: ${amount} ${currency}</li>
+                        </ul>
+                        <p>Please try again or contact our support team if you need assistance.</p>
+                        <p>If you have any questions, feel free to reach out to our support team at <a href="mailto:support@edu-nexus.com">support@edu-nexus.com</a>.</p>
+                        <p>Best regards,</p>
+                        <p><strong>The Edu-Nexus Team</strong></p>
+                    </div>
+                </div>
+            `,
+        };
+
+        await this.transporter.sendMail(mailOptions);
+    }
 }

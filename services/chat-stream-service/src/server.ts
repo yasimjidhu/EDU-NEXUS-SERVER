@@ -117,6 +117,12 @@ io.on('connection', (socket: Socket) => {
       console.error('Error updating message status to delivered',error)
     }
   })
+ 
+  socket.on('typing', (data) => {
+    console.log('user typing', data);
+    const { conversationId, userId, isTyping } = data;
+    socket.to(conversationId).emit('typing', { userId, isTyping });
+  });
 });
 
 const PORT = 3006;

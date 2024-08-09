@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.ts",
     "clean": "rmdir /s /q   ",
     "build": "tsc",
-    "generate-grpc": "grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:./src/generated --js_out=import_style=commonjs,binary:./src/generated --grpc_out=grpc_js:./src/generated -I ./proto userService.proto",    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "generate-grpc": "grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:./src/generated --js_out=import_style=commonjs,binary:./src/generated --grpc_out=grpc_js:./src/generated -I ./proto userService.proto",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -33,6 +34,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.11.1",
     "@grpc/proto-loader": "^0.7.13",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2"
   }
 }
