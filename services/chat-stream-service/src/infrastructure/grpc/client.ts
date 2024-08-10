@@ -19,7 +19,7 @@ export class UserServiceClient implements IUserServiceClient{
 
     constructor(){
         this.client = new userServiceProto.UserService(
-            'localhost:50052',
+            'user-service:50052',
             grpc.credentials.createInsecure()
         );
     }

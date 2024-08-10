@@ -1,9 +1,11 @@
 export interface Message {
-  _id?: string;
+  id: string;
   conversationId: string;
   senderId: string;
-  text: string;
-  audio?:string;
-  status: string,
+  text?: string;
+  fileUrl?: string;
+  fileType?: 'audio' | 'image' | 'video';
+  status: string;
   createdAt: Date;
+  _id?: string;
 }

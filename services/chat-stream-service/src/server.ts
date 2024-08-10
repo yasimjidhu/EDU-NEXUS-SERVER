@@ -24,12 +24,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: 'http://frontend:5173',
     credentials: true
   },
 });
 
 app.use('/chat', router);
+
 
 // setup dependencies
 const chatRepository = new ChatRepository()
@@ -84,9 +85,9 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('message', (message:Message) => {
-    console.log(`Message received from ${message.senderId}:`, message);
-    const { conversationId } = message;
-    io.to(conversationId).emit('message', message);
+    const { conversationId,senderId } = message;
+    socket.broadcast.to(conversationId).emit('message',message)
+    // io.to(conversationId).emit('message', message);
     console.log(`Message sent to room ${conversationId}:`, message);
   });
 

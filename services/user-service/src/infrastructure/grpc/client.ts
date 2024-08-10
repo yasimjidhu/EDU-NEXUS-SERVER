@@ -19,7 +19,7 @@ const proto = grpc.loadPackageDefinition(packageDefinition) as unknown as {
   };
 };
 
-const client = new proto.userservice.UserService('localhost:50051', grpc.credentials.createInsecure());
+const client = new proto.userservice.UserService('user-service:50051', grpc.credentials.createInsecure());
 
 export async function getInstructorsByIds(instructorIds: string[]): Promise<any[]> {
   return new Promise((resolve, reject) => {

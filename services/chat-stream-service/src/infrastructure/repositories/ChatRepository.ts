@@ -6,6 +6,7 @@ export class ChatRepository implements IChatRepository {
   async saveMessage(message: Message): Promise<Message> {
     const newMessage = new MessageModel(message);
     const savedMessage = await newMessage.save();
+    console.log('new message saved',savedMessage)
     return savedMessage.toObject() as Message;
   }
   async updateMessageStatus(messageId:string,status:string):Promise<Message>{
@@ -14,14 +15,13 @@ export class ChatRepository implements IChatRepository {
       {$set:{status}},
       {new:true}
     ).exec();
-    console.log('updated message',updatedMessage)
     return updatedMessage!.toObject();
   }
   async getMessagesByConversationId(conversationId: string): Promise<Message[]> {
     const messages = await MessageModel.find({conversationId})
       .sort({ timestamp: 1 })
       .exec();
-    return messages.map((message) => message.toObject() as Message);
+    return messages.map((message:any) => message.toObject() as Message);
   }
 
   async getMessagedStudentsIds(instructorId:string):Promise<string[]>{
