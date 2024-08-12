@@ -35,5 +35,7 @@ router.get('/messaged-students/:instructorId', chatController.getMessagedStudent
 router.post('/group', groupController.createGroup.bind(groupController))
 router.post('/group/join', groupController.joinGroup.bind(groupController))
 router.post('/group/leave', groupController.leaveGroup.bind(groupController))
+router.get('/group/:groupId', groupController.getGroup.bind(groupController))
+router.get('/joined-groups/:userId', groupController.getUserJoinedGroups.bind(groupController))
 
 export default router;

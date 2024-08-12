@@ -37,4 +37,24 @@ export class GroupController {
             res.status(400).json({ success: false, error: error.message });
         }
     };
+    async getGroup(req: Request, res: Response): Promise<void> {
+        const { groupId } = req.params 
+        console.log('get group reached in backend with groupid',groupId)
+        try {
+            const group = await this.groupUseCase.getGroup(groupId);
+            res.status(200).json({ success: true ,group});
+        } catch (error: any) {
+            res.status(400).json({ success: false, error: error.message });
+        }
+    };
+    async getUserJoinedGroups(req: Request, res: Response): Promise<void> {
+        const { userId } = req.params 
+        console.log('get usergroup reached in backend with groupid',userId)
+        try {
+            const groups = await this.groupUseCase.getJoinedUserGroups(userId);
+            res.status(200).json({ success: true ,groups});
+        } catch (error: any) {
+            res.status(400).json({ success: false, error: error.message });
+        }
+    };
 }

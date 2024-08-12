@@ -7,16 +7,19 @@ export class GroupUseCase{
   constructor(groupRepository: GroupRepository) {
     this.groupRepository = groupRepository;
   }
-
   async createGroup(name: string,image:string,description:string, members: string[]): Promise<Group> {
     return await this.groupRepository.createGroup(name,image,description, members);
   }
-
   async addUserToGroup(groupId: string, userId: string): Promise<void> {
-    await this.groupRepository.addUserToGroup(groupId, userId);
+    return await this.groupRepository.addUserToGroup(groupId, userId);
   }
-
   async removeUserFromGroup(groupId: string, userId: string): Promise<void> {
-    await this.groupRepository.removeUserFromGroup(groupId, userId);
+    return await this.groupRepository.removeUserFromGroup(groupId, userId);
+  }
+  async getGroup(groupId:string):Promise<Group | undefined>{
+    return await this.groupRepository.getGroupById(groupId)
+  }
+  async getJoinedUserGroups(userId:string):Promise<Group[]>{
+    return await this.groupRepository.getJoinedGroupsByUserId(userId)
   }
 }
