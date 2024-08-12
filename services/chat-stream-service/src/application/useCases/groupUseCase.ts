@@ -1,0 +1,22 @@
+import { GroupRepository } from '@repositories/groupRepository';
+import { Group } from '@entities/group';
+
+export class GroupUseCase{
+  private groupRepository: GroupRepository;
+
+  constructor(groupRepository: GroupRepository) {
+    this.groupRepository = groupRepository;
+  }
+
+  async createGroup(name: string,image:string,description:string, members: string[]): Promise<Group> {
+    return await this.groupRepository.createGroup(name,image,description, members);
+  }
+
+  async addUserToGroup(groupId: string, userId: string): Promise<void> {
+    await this.groupRepository.addUserToGroup(groupId, userId);
+  }
+
+  async removeUserFromGroup(groupId: string, userId: string): Promise<void> {
+    await this.groupRepository.removeUserFromGroup(groupId, userId);
+  }
+}

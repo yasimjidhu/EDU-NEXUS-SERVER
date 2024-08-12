@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ChatUseCase } from '../../application/useCases/chatUseCase';
 
 export class ChatController {
-  constructor(private chatUseCase: ChatUseCase) {}
+  constructor(private chatUseCase: ChatUseCase) { }
 
   async sendMessage(req: Request, res: Response): Promise<void> {
     try {
@@ -26,7 +26,7 @@ export class ChatController {
       res.status(500).json({ error: error.message });
     }
   }
-   async getMessagedStudents (req: Request, res: Response):Promise<void>{
+  async getMessagedStudents(req: Request, res: Response): Promise<void> {
     try {
       const { instructorId } = req.params;
       const messagedStudents = await this.chatUseCase.getMessagedStudents(instructorId);
@@ -34,5 +34,5 @@ export class ChatController {
     } catch (error) {
       res.status(500).json({ message: 'Error fetching messaged students', error });
     }
-   }
+  }
 }

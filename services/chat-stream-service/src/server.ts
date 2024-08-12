@@ -8,7 +8,7 @@ import { Server, Socket } from 'socket.io';
 import router from './presentation/routes/chatRoutes';
 import connectDB from './infrastructure/database/chatDb';
 import { verifyAccessToken } from './presentation/middlewares/authMiddleware';
-import { ChatUseCase} from './application/useCases/chatUseCase'
+import { ChatUseCase } from './application/useCases/chatUseCase'
 import { ChatService } from './infrastructure/services/ChatService';
 import { UserServiceClient } from './infrastructure/grpc/client';
 import { ChatRepository } from './infrastructure/repositories/ChatRepository';
@@ -38,7 +38,7 @@ const chatService = new ChatService(chatRepository);
 const userServiceClient = new UserServiceClient();
 const chatUseCase = new ChatUseCase(chatService, userServiceClient);
 
-io.use((socket: Socket, next:(err?:any)=>void) => {
+io.use((socket: Socket, next: (err?: any) => void) => {
   const token = socket.handshake.auth.token;
   if (!token) {
     console.log('no token')
@@ -47,8 +47,8 @@ io.use((socket: Socket, next:(err?:any)=>void) => {
 
   try {
     const decoded = verifyAccessToken(token);
-    (socket as any).decoded = decoded; 
-    console.log('decoded user',decoded)
+    (socket as any).decoded = decoded;
+    console.log('decoded user', decoded)
     next();
   } catch (err) {
     next(new Error('Authentication error'));
@@ -63,59 +63,71 @@ io.on('connection', (socket: Socket) => {
 
   // Mark as online
   onlineUsers[email] = true;
-  io.emit('userStatus',{email,status:'online'})
-  console.log('a user connected',email);
+  io.emit('userStatus', { email, status: 'online' })
+  console.log('a user connected', email);
 
   socket.on('disconnect', () => {
-    
+
     // Mark as offline
     delete onlineUsers[email];
-    io.emit('userStatus',{email,status:'offline'});
-    console.log('user disconnected',email);
+    io.emit('userStatus', { email, status: 'offline' });
+    console.log('user disconnected', email);
   });
 
-  socket.on('join', (conversationId:string) => {
+  socket.on('join', (conversationId: string) => {
     socket.join(conversationId);
     console.log(`User joined room ${conversationId}`);
   });
 
-  socket.on('leave', (conversationId:string) => {
+  socket.on('leave', (conversationId: string) => {
     socket.leave(conversationId);
     console.log(`User left room ${conversationId}`);
   });
 
-  socket.on('message', (message:Message) => {
-    const { conversationId,senderId } = message;
-    socket.broadcast.to(conversationId).emit('message',message)
-    // io.to(conversationId).emit('message', message);
+  socket.on('message', (message: Message) => {
+    const { conversationId, senderId } = message;
+    socket.broadcast.to(conversationId).emit('message', message)
     console.log(`Message sent to room ${conversationId}:`, message);
   });
 
-  socket.on('messageDelivered',async(messageId:string)=>{
-    // update message status to delivered
-    try{
-      const updatedMessage = await chatUseCase.updateMessageStatus(messageId,'delivered')
+  socket.on('messageDelivered', async (messageId: string) => {
+    try {
+      const updatedMessage = await chatUseCase.updateMessageStatus(messageId, 'delivered')
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
-    }catch(error:any){
-      console.error('Error updating message status to delivered',error)
+    } catch (error: any) {
+      console.error('Error updating message status to delivered', error)
     }
   })
 
-  socket.on('messageRead',async(messageId:string)=>{
-    // updated message status to read
+  socket.on('messageRead', async (messageId: string) => {
     try {
-      const updatedMessage = await chatUseCase.updateMessageStatus(messageId,'read')
+      const updatedMessage = await chatUseCase.updateMessageStatus(messageId, 'read')
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
-    } catch (error:any) {
-      console.error('Error updating message status to delivered',error)
+    } catch (error: any) {
+      console.error('Error updating message status to delivered', error)
     }
   })
- 
-  socket.on('typing', (data:{conversationId:string,userId:string,isTyping:boolean}) => {
+
+  socket.on('typing', (data: { conversationId: string, userId: string, isTyping: boolean }) => {
     console.log('user typing', data);
     const { conversationId, userId, isTyping } = data;
     socket.to(conversationId).emit('typing', { userId, isTyping });
   });
+
+  socket.on('joinGroup',(groupId:string)=>{
+    socket.join(groupId)
+    console.log(`user joined group ${groupId}`)
+  })
+
+  socket.on('leaveGroup',(groupId:string)=>{
+    socket.leave(groupId)
+    console.log(`user left group ${groupId}`)
+  })
+
+  socket.on('groupMessage',(groupId:string,message:Message)=>{
+    io.to(groupId).emit('message',message)
+    console.log(`message sent to group ${groupId}`)
+  })
 });
 
 const PORT = 3006;
