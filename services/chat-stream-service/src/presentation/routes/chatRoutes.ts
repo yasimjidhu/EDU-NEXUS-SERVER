@@ -30,6 +30,7 @@ const groupController = new GroupController(groupUseCase)
 router.post('/message', chatController.sendMessage.bind(chatController));
 router.get('/messages/:conversationId', chatController.getMessages.bind(chatController));
 router.get('/messaged-students/:instructorId', chatController.getMessagedStudents.bind(chatController))
+router.get('/group-messages/:groupId',chatController.getGroupMessages.bind(chatController))
 
 // group related routes
 router.post('/group', groupController.createGroup.bind(groupController))
@@ -37,5 +38,4 @@ router.post('/group/join', groupController.joinGroup.bind(groupController))
 router.post('/group/leave', groupController.leaveGroup.bind(groupController))
 router.get('/group/:groupId', groupController.getGroup.bind(groupController))
 router.get('/joined-groups/:userId', groupController.getUserJoinedGroups.bind(groupController))
-
 export default router;

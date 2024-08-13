@@ -28,4 +28,7 @@ export class ChatUseCase {
       throw new Error(error)
     }
   }
+  async getGroupMessages(groupId: string): Promise<Message[]> {
+     return await this.chatService.getGroupMessages(groupId);
+  }
 }

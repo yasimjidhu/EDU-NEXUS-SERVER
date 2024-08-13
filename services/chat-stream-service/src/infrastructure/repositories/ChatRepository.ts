@@ -28,4 +28,20 @@ export class ChatRepository implements IChatRepository {
     const messagedStudentsIds = await MessageModel.distinct('senderId',{conversationId:new RegExp(instructorId)})
     return messagedStudentsIds
   }
+  async getGroupMessages(groupId:string):Promise<Message[]>{
+    console.log('group messages called in backend and id got',groupId)
+    const messages = await MessageModel.aggregate([
+      {
+        $match:{
+          conversationId:groupId,
+          isGroup:true
+        },
+      },
+      {
+        $sort:{createdAt:1},
+      }
+    ])
+    console.log('group messages',messages)
+    return messages
+  }
 }

@@ -7,6 +7,7 @@ const messageSchema = new mongoose.Schema({
   fileUrl: { type: String },
   fileType: { type: String },
   status: { type: String, enum: ['sent', 'delivered', 'read'], default: 'sent' },
+  isGroup:{type:Boolean,required:false,default:false},
   createdAt: { type: Date, required: true, default: Date.now },
 });
 

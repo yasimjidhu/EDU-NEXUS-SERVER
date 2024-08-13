@@ -8,4 +8,5 @@ export interface Message {
   status: string;
   createdAt: Date;
   _id?: string;
+  isGroup:boolean;
 }

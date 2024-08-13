@@ -20,4 +20,7 @@ export class ChatService implements IChatService {
   async getMessagedStudentsIds(instructorId:string):Promise<string[]>{
     return this.chatRepository.getMessagedStudentsIds(instructorId)
   }
+  async getGroupMessages(groupId:string):Promise<Message[]>{
+    return await  this.chatRepository.getGroupMessages(groupId)
+  }
 }

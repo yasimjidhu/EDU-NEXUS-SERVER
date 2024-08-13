@@ -31,8 +31,17 @@ export class ChatController {
       const { instructorId } = req.params;
       const messagedStudents = await this.chatUseCase.getMessagedStudents(instructorId);
       res.status(200).json(messagedStudents);
-    } catch (error) {
+    } catch (error:any) {
       res.status(500).json({ message: 'Error fetching messaged students', error });
+    }
+  }
+  async getGroupMessages(req: Request, res: Response): Promise<void> {
+    try {
+      const { groupId } = req.params;
+      const messages = await this.chatUseCase.getGroupMessages(groupId);
+      res.status(200).json({messages});
+    } catch (error:any) {
+      res.status(500).json({ message: 'Error fetching group messages', error });
     }
   }
 }
