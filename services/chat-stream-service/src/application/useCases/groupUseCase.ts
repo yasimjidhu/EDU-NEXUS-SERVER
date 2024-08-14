@@ -13,6 +13,9 @@ export class GroupUseCase{
   async addUserToGroup(groupId: string, userId: string): Promise<void> {
     return await this.groupRepository.addUserToGroup(groupId, userId);
   }
+  async addUsersToGroup(groupId: string, userIds: string[]): Promise<void> {
+    return await this.groupRepository.addUsersToGroup(groupId, userIds);
+  }
   async removeUserFromGroup(groupId: string, userId: string): Promise<void> {
     return await this.groupRepository.removeUserFromGroup(groupId, userId);
   }

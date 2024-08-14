@@ -2,6 +2,8 @@ import mongoose, { model } from 'mongoose';
 
 const messageSchema = new mongoose.Schema({
   senderId: { type: String, required: true },
+  senderName: { type: String, required: false },
+  senderProfile:{type:String,required:false},
   conversationId:{type:String,required:true},
   text: { type: String, required: false },
   fileUrl: { type: String },

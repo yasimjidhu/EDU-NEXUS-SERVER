@@ -206,7 +206,6 @@ export class PaymentUseCase {
       console.log(`Payment failure notification sent to user ${userId}`);
     } catch (error) {
       console.error('Failed to send payment failure notification:', error);
-      // You might want to implement a fallback notification method here
     }
   }
 }

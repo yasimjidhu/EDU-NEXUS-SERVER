@@ -28,8 +28,14 @@ export class GroupController {
     };
 
     async leaveGroup(req: Request, res: Response): Promise<void> {
-        const { groupId, userId } = req.body;
+        const groupId = req.query.groupId as string | undefined;
+        const userId = req.query.userId as string | undefined;
 
+        if (!groupId || !userId) {
+            res.status(400).json({ success: false, error: 'Missing groupId or userId' });
+            return;
+        }
+        
         try {
             await this.groupUseCase.removeUserFromGroup(groupId, userId);
             res.status(200).json({ success: true });
@@ -53,6 +59,17 @@ export class GroupController {
         try {
             const groups = await this.groupUseCase.getJoinedUserGroups(userId);
             res.status(200).json({ success: true ,groups});
+        } catch (error: any) {
+            res.status(400).json({ success: false, error: error.message });
+        }
+    };
+    async addUsersToGroup(req: Request, res: Response): Promise<void> {
+        const { groupId } = req.params 
+        const {userIds} = req.body
+        console.log('add user to group reached in backend with groupid',groupId)
+        try {
+            await this.groupUseCase.addUsersToGroup(groupId,userIds);
+            res.status(200).json({ success: true });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });
         }

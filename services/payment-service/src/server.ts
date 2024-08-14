@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { router } from './presentation/routes/paymentRoute';
 import { StartPaymentDb } from './infrastructure/database/paymentDb';
+import initializeDatabase from './infrastructure/database/createTable';
 
 
 
@@ -19,6 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/payment',router)
 
 StartPaymentDb()
+initializeDatabase()
   app.listen(3005, () => {
     console.log('payment service running on port 3005 ');
   })

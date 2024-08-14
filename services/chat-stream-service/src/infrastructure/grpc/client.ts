@@ -25,12 +25,14 @@ export class UserServiceClient implements IUserServiceClient{
     }
 
     public getStudentByIds(studentsIds:string[]):Promise<any>{
+        console.log('grpc method called for getting user service data')
         return new Promise((resolve,reject)=>{
             this.client.GetStudentsByIds({user_ids:studentsIds},(error:any,response:any)=>{
                 if(error){
                     console.log(error)
                     reject(error)
                 }else{
+                    console.log('this is the messaged student data got from user service through grpc call',response.users)
                     resolve(response.users)
                 }
             })

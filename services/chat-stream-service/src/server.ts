@@ -119,14 +119,14 @@ io.on('connection', (socket: Socket) => {
     console.log(`user joined group ${groupId}`)
   })
 
-  socket.on('leaveGroup',(groupId:string)=>{
+  socket.on('leaveGroup',(groupId:string,userId:string,userName:string)=>{
     socket.leave(groupId)
-    console.log(`user left group ${groupId}`)
+    io.to(groupId).emit('userLeft',userName)
+    console.log(`${userName} left group ${groupId}`)
   })
 
   socket.on('groupMessage',(groupId:string,message:Message)=>{
-    io.to(groupId).emit('message',message)
-    console.log(`message sent to group ${groupId}`)
+    io.to(groupId).emit('groupMessage',message)
   })
 });
 

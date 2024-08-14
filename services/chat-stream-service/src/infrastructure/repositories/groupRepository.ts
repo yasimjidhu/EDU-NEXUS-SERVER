@@ -11,7 +11,24 @@ export class GroupRepository {
     async addUserToGroup(groupId: string, userId: string): Promise<void> {
       await GroupModel.findByIdAndUpdate(groupId, { $addToSet: { members: userId } });
     }
-  
+    async addUsersToGroup(groupId: string, userIds: string[]): Promise<void> {
+      try {
+        if(!Array.isArray(userIds)){
+          throw new Error('user ids should be an array of string')
+        }
+        
+        // add users to the group
+        await GroupModel.findByIdAndUpdate(groupId,
+          {$addToSet:{members:{$each:userIds}}},
+          {new:true,useFindAndModify: false}
+        )
+        console.log(`Users added to group ${groupId} successfully.`);
+      } catch (error:any) {
+        console.error(error)
+        throw new Error(`Error adding users to group: ${error.message}`);
+      }
+      await GroupModel.findByIdAndUpdate();
+    }
     async removeUserFromGroup(groupId: string, userId: string): Promise<void> {
       await GroupModel.findByIdAndUpdate(groupId, { $pull: { members: userId } });
     }
