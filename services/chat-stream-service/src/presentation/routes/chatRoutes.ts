@@ -31,6 +31,7 @@ router.post('/message', chatController.sendMessage.bind(chatController));
 router.get('/messages/:conversationId', chatController.getMessages.bind(chatController));
 router.get('/messaged-students/:instructorId', chatController.getMessagedStudents.bind(chatController))
 router.get('/group-messages/:groupId',chatController.getGroupMessages.bind(chatController))
+router.get('/unread-messages/:userId',chatController.getUnreadMessages.bind(chatController))
 
 // group related routes
 router.post('/group', groupController.createGroup.bind(groupController))

@@ -6,10 +6,10 @@ export class GroupController {
     constructor(private groupUseCase: GroupUseCase) { }
 
     async createGroup(req: Request, res: Response): Promise<void> {
-        const { name,image,description, members } = req.body;
+        const { name, image, description, members } = req.body;
 
         try {
-            const group: Group = await this.groupUseCase.createGroup(name,image,description, members);
+            const group: Group = await this.groupUseCase.createGroup(name, image, description, members);
             res.status(201).json({ success: true, group });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });
@@ -35,7 +35,6 @@ export class GroupController {
             res.status(400).json({ success: false, error: 'Missing groupId or userId' });
             return;
         }
-        
         try {
             await this.groupUseCase.removeUserFromGroup(groupId, userId);
             res.status(200).json({ success: true });
@@ -44,32 +43,29 @@ export class GroupController {
         }
     };
     async getGroup(req: Request, res: Response): Promise<void> {
-        const { groupId } = req.params 
-        console.log('get group reached in backend with groupid',groupId)
+        const { groupId } = req.params
         try {
             const group = await this.groupUseCase.getGroup(groupId);
-            res.status(200).json({ success: true ,group});
+            res.status(200).json({ success: true, group });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });
         }
     };
     async getUserJoinedGroups(req: Request, res: Response): Promise<void> {
-        const { userId } = req.params 
-        console.log('get usergroup reached in backend with groupid',userId)
+        const { userId } = req.params
         try {
             const groups = await this.groupUseCase.getJoinedUserGroups(userId);
-            res.status(200).json({ success: true ,groups});
+            res.status(200).json({ success: true, groups });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });
         }
     };
     async addUsersToGroup(req: Request, res: Response): Promise<void> {
-        const { groupId } = req.params 
-        const {userIds} = req.body
-        console.log('add user to group reached in backend with groupid',groupId)
+        const { groupId } = req.params
+        const { userIds } = req.body
         try {
-            await this.groupUseCase.addUsersToGroup(groupId,userIds);
-            res.status(200).json({ success: true });
+            const group = await this.groupUseCase.addUsersToGroup(groupId, userIds);
+            res.status(200).json({ success: true, group });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });
         }

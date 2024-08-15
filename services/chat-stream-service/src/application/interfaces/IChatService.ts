@@ -6,4 +6,5 @@ export interface IChatService {
   getMessagedStudentsIds(instructorId:string):Promise<string[]>;
   updateMessageStatus(messageId:string,status:string):Promise<Message>
   getGroupMessages(groupId:string):Promise<Message[]>
+  getUnreadMessages(userId:string):Promise<any>
 }

@@ -101,7 +101,9 @@ io.on('connection', (socket: Socket) => {
 
   socket.on('messageRead', async (messageId: string) => {
     try {
+      console.log('message read event got in backend',messageId)
       const updatedMessage = await chatUseCase.updateMessageStatus(messageId, 'read')
+      console.log('updated message sent to socket',updatedMessage)
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
     } catch (error: any) {
       console.error('Error updating message status to delivered', error)
@@ -116,13 +118,11 @@ io.on('connection', (socket: Socket) => {
 
   socket.on('joinGroup',(groupId:string)=>{
     socket.join(groupId)
-    console.log(`user joined group ${groupId}`)
   })
 
   socket.on('leaveGroup',(groupId:string,userId:string,userName:string)=>{
     socket.leave(groupId)
     io.to(groupId).emit('userLeft',userName)
-    console.log(`${userName} left group ${groupId}`)
   })
 
   socket.on('groupMessage',(groupId:string,message:Message)=>{

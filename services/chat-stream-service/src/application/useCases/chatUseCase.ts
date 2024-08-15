@@ -31,4 +31,7 @@ export class ChatUseCase {
   async getGroupMessages(groupId: string): Promise<Message[]> {
      return await this.chatService.getGroupMessages(groupId);
   }
+  async getUnreadMessages(userId:string):Promise<any>{
+    return await this.chatService.getUnreadMessages(userId)
+  }
 }

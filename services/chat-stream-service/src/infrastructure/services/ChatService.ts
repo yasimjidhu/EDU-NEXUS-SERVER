@@ -23,4 +23,7 @@ export class ChatService implements IChatService {
   async getGroupMessages(groupId:string):Promise<Message[]>{
     return await  this.chatRepository.getGroupMessages(groupId)
   }
+  async getUnreadMessages(userId:string):Promise<any>{
+    return await  this.chatRepository.getUnreadMessages(userId)
+  }
 }
