@@ -53,7 +53,7 @@ export class UserRepositoryImpl implements UserRepository {
     try {
       const allInstructors = await User.find({
         role: "instructor",
-        isVerified: false,
+        isVerified: true,
         isRejected: false,
       }).exec();
       return allInstructors.map(
@@ -80,7 +80,7 @@ export class UserRepositoryImpl implements UserRepository {
     } catch (error: any) {
       throw new Error(`Failed to find all instructors: ${error.message}`);
     }
-  }
+  } 
   async findStudentsByIds(studentsIds:string[]):Promise<UserEntity[]|null>{
     try{
       const objectIds = studentsIds.map(id => new mongoose.Types.ObjectId(id))
@@ -94,8 +94,8 @@ export class UserRepositoryImpl implements UserRepository {
       console.log('this is the fetched students data ',students)
       return students.map((student)=>student.toObject() as UserEntity)
     }catch(error:any){
-      throw new Error(`Failed to find students data: ${error.message}`);
       console.log(error)
+      throw new Error(`Failed to find students data: ${error.message}`);
     }
   }
   async getVerifiedInstructors(): Promise<UserEntity[]> {
