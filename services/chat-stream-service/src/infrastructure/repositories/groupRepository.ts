@@ -56,7 +56,6 @@ export class GroupRepository {
           },
         },
       ]);
-      console.log('user joined groups is',joinedGroups)
       return joinedGroups as Group[];
     }
 }

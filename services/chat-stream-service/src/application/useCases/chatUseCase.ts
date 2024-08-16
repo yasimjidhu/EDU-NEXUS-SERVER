@@ -12,8 +12,8 @@ export class ChatUseCase {
   async sendMessage(message: Message): Promise<Message> {
     return this.chatService.sendMessage(message);
   }
-  async updateMessageStatus(messageId:string,status:string):Promise<Message>{
-    return await this.chatService.updateMessageStatus(messageId,status)
+  async updateMessageStatus(messageId:string,userId:string,status:string):Promise<Message>{
+    return await this.chatService.updateMessageStatus(messageId,userId,status)
   }
   async getConversationMessages(conversationId: string): Promise<Message[]> {
     return this.chatService.getMessages(conversationId);

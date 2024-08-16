@@ -87,23 +87,22 @@ io.on('connection', (socket: Socket) => {
   socket.on('message', (message: Message) => {
     const { conversationId, senderId } = message;
     socket.broadcast.to(conversationId).emit('message', message)
-    console.log(`Message sent to room ${conversationId}:`, message);
   });
 
-  socket.on('messageDelivered', async (messageId: string) => {
+  socket.on('messageDelivered', async ({messageId,userId}: {messageId:string,userId:string}) => {
     try {
-      const updatedMessage = await chatUseCase.updateMessageStatus(messageId, 'delivered')
+      const updatedMessage = await chatUseCase.updateMessageStatus(messageId,userId, 'delivered')
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
     } catch (error: any) {
       console.error('Error updating message status to delivered', error)
     }
   })
 
-  socket.on('messageRead', async (messageId: string) => {
+  socket.on('messageRead', async ({messageId,userId}: {messageId:string,userId:string}) => {
     try {
-      console.log('message read event got in backend',messageId)
-      const updatedMessage = await chatUseCase.updateMessageStatus(messageId, 'read')
-      console.log('updated message sent to socket',updatedMessage)
+      console.log('message read reached in server',messageId,userId)
+      const updatedMessage = await chatUseCase.updateMessageStatus(messageId,userId, 'read')
+      console.log('updated message in message read',updatedMessage)
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
     } catch (error: any) {
       console.error('Error updating message status to delivered', error)
@@ -111,7 +110,6 @@ io.on('connection', (socket: Socket) => {
   })
 
   socket.on('typing', (data: { conversationId: string, userId: string, isTyping: boolean }) => {
-    console.log('user typing', data);
     const { conversationId, userId, isTyping } = data;
     socket.to(conversationId).emit('typing', { userId, isTyping });
   });

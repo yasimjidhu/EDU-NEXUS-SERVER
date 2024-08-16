@@ -11,8 +11,8 @@ export class ChatService implements IChatService {
   async sendMessage(message: Message): Promise<Message> {
     return this.chatRepository.saveMessage(message);
   }
-  async updateMessageStatus(messageId:string,status:string):Promise<Message>{
-    return await this.chatRepository.updateMessageStatus(messageId,status)
+  async updateMessageStatus(messageId:string,userId:string,status:string):Promise<Message>{
+    return await this.chatRepository.updateMessageStatus(messageId,userId,status)
   }
   async getMessages(conversationId: string): Promise<Message[]> {
     return this.chatRepository.getMessagesByConversationId(conversationId);

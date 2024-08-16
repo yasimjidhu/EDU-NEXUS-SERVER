@@ -8,12 +8,22 @@ export class ChatRepository implements IChatRepository {
     const savedMessage = await newMessage.save();
     return savedMessage.toObject() as Message;
   }
-  async updateMessageStatus(messageId: string, status: string): Promise<Message> {
+  async updateMessageStatus(messageId: string, userId: string, status: string): Promise<Message> {
+    const updateFields: any = { status };  // Always update the status
+  
+    // Only update the readBy array if the status is 'read'
+    if (status === 'read') {
+      updateFields.$addToSet = { readBy: userId };
+    }
+  
     const updatedMessage = await MessageModel.findByIdAndUpdate(
       messageId,
-      { $set: { status } },
+      updateFields,
       { new: true }
     ).exec();
+
+    console.log('updated message status',updatedMessage)
+  
     return updatedMessage!.toObject();
   }
   async getMessagesByConversationId(conversationId: string): Promise<Message[]> {
@@ -82,7 +92,7 @@ export class ChatRepository implements IChatRepository {
       return unreadData;
     } catch (error:any) {
       console.error('Error getting unread messages:', error);
-      throw error; // Ensure to handle errors in your application
+      throw error; 
     }
   }
   
