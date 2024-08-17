@@ -22,6 +22,7 @@ const profileUseCase = new ProfileUseCase(userRepository)
 const userController = new UserController(registerUserUseCase,authorizeUserUsecase,profileUseCase,authService);
 
 router.post('/register',userController.registerUserHandler.bind(userController));
+router.put('/update/:email',userController.updateUserDetails.bind(userController));
 
 router.post('/approve',userController.approveInstructorHandler.bind(userController))
 router.post('/reject',userController.rejectInstructorHandler.bind(userController))

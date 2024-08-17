@@ -66,4 +66,7 @@ export class ProfileUseCase{
         await sendUnblockUserMessage(email)
         return unBlockedUser
     }
+    async updateUserDetails(email:string,data:Partial<UserEntity>):Promise<UserEntity | null>{
+        return await this.userRepository.updateUserDetails(email,data)
+    }
 }

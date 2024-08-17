@@ -166,4 +166,18 @@ export class UserRepositoryImpl implements UserRepository {
       throw new Error(`Failed to unblock the user: ${error.message}`);
     }
   }
+  async updateUserDetails(email: string, updateData: Partial<UserEntity>): Promise<UserEntity | null> {
+    try {
+      const updatedUser = await User.findOneAndUpdate(
+        {email:email},
+        { $set: updateData },
+        { new: true }
+      );
+      console.log('updated use in backend',updatedUser)
+      return updatedUser ? (updatedUser.toObject() as UserEntity) : null;
+    } catch (error: any) {
+      console.error('Error updating user details:', error);
+      throw new Error(`Failed to update user details: ${error.message}`);
+    }
+  }
 }

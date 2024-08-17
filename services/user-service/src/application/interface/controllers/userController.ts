@@ -135,5 +135,15 @@ export class UserController {
       res.status(500).json({ message: error.message });
     }
   }
+  async updateUserDetails(req:Request,res:Response):Promise<void>{
+    const {email} = req.params
+    try {
+      const updatedUser = await this.profileUseCase.updateUserDetails(email,req.body.updateData)
+      res.status(200).json(updatedUser)
+    } catch (error:any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
 
 }
