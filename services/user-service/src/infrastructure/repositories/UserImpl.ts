@@ -168,6 +168,7 @@ export class UserRepositoryImpl implements UserRepository {
   }
   async updateUserDetails(email: string, updateData: Partial<UserEntity>): Promise<UserEntity | null> {
     try {
+      console.log('update user detials reafhed in server',updateData)
       const updatedUser = await User.findOneAndUpdate(
         {email:email},
         { $set: updateData },
