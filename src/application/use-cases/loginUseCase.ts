@@ -40,9 +40,14 @@ export class LoginUseCase implements ILoginUseCase{
         } 
 
         const user = await this.userRepository.findByEmail(email);
-
+        console.log('user in login from db is',user)
         if (!user) {
             throw new Error('Incorrect email');
+        }
+
+        if(user.isBlocked){
+            console.log('use is blocked')
+            throw new Error('Access Denied')
         }
 
         const passwordMatch = await this.authService.comparePassword(password, user.hashedPassword!);

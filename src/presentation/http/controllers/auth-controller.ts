@@ -7,7 +7,7 @@ import { ISignupController } from "@interfaces/controllers/ISignupController"
 import verifyOTP from "@usecases/verifyOtpUseCase";
 import GenerateOtp from "@usecases/generateOtpUseCase";
 
-const client = new OAuth2Client('62678914472-ll9pe5phb4tq5341lfgcgggmsinu93st.apps.googleusercontent.com');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '');
 
 interface UserDetails {
   username: string;
@@ -104,7 +104,7 @@ export class SignupController implements ISignupController {
     try {
       const ticket = await client.verifyIdToken({
         idToken: token,
-        audience: '62678914472-ll9pe5phb4tq5341lfgcgggmsinu93st.apps.googleusercontent.com',
+        audience: process.env.GOOGLE_CLIENT_ID || '',
       });
 
       const payload = ticket.getPayload();

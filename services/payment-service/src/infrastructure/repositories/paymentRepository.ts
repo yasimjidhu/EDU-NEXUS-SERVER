@@ -40,7 +40,7 @@ export class PaymentRepositoryImpl implements PaymentRepository {
       payment.updatedAt
     ];
 
-    await this.pool.query(query, values);
+    await client.query(query, values);
 
     await client.query('COMMIT')
 
