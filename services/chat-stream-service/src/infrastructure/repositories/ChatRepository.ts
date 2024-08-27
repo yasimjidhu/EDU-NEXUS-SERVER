@@ -78,6 +78,7 @@ export class ChatRepository implements IChatRepository {
               _id: 1,
               senderId: 1,
               senderName: 1,
+              senderProfile:1,
               status:1,
               text: 1,
               fileUrl: 1,
