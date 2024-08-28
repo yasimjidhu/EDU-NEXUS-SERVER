@@ -21,3 +21,4 @@ const paymentController = new paymentController_1.PaymentController(paymentUseCa
 exports.router = (0, express_1.Router)();
 exports.router.post('/create-checkout-session', paymentController.createCheckoutSession.bind(paymentController));
 exports.router.post('/complete-purchase', paymentController.completePurchase.bind(paymentController));
+exports.router.get('/find-transactions', paymentController.findTransactions.bind(paymentController));

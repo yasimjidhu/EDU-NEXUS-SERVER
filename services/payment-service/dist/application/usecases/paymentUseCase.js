@@ -167,7 +167,18 @@ class PaymentUseCase {
         }
         catch (error) {
             console.error('Failed to send payment failure notification:', error);
-            // You might want to implement a fallback notification method here
+        }
+    }
+    async getTransactions(filter = {}) {
+        try {
+            // Here we assume filter is already in the correct format
+            const transactions = await this.paymentRepository.findTransactions(filter);
+            console.log('transactions in usecase', transactions);
+            return transactions;
+        }
+        catch (error) {
+            console.error('Error retrieving transactions:', error);
+            throw new Error('Failed to retrieve transactions');
         }
     }
 }

@@ -25,5 +25,17 @@ class PaymentController {
             res.status(500).json({ error: error.message });
         }
     }
+    async findTransactions(req, res) {
+        const filter = req.query;
+        console.log('filter in find transactions', filter);
+        try {
+            // Convert query parameters to the correct format if necessary
+            const transactions = await this.paymentUseCase.getTransactions(filter);
+            res.status(200).json(transactions);
+        }
+        catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 exports.PaymentController = PaymentController;

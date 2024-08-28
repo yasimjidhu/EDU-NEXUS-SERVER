@@ -1,8 +1,8 @@
 import { PaymentRepository } from '../../domain/repositories/PaymentRepository';
-import Stripe from 'stripe';
 import { TCourse } from '../../shared/types/courseTypes';
 import { KafkaProducer } from '../../infrastructure/messaging/kafka/producer';
 import { PaymentEntity } from '../../domain/entities/payment';
+import Stripe from 'stripe';
 
 export class PaymentUseCase {
   private paymentRepository: PaymentRepository;

@@ -32,7 +32,7 @@ class PaymentRepositoryImpl {
                 payment.createdAt,
                 payment.updatedAt
             ];
-            await this.pool.query(query, values);
+            await client.query(query, values);
             await client.query('COMMIT');
         }
         catch (error) {
@@ -57,6 +57,29 @@ class PaymentRepositoryImpl {
         }
         const row = result.rows[0];
         return new payment_1.PaymentEntity(row.user_id, row.course_id, row.amount, row.currency, row.status, row.created_at, row.updated_at, row.id);
+    }
+    async findTransactions(filter) {
+        // Default values for pagination and sorting
+        const sortBy = filter.sortBy || 'created_at';
+        const sortOrder = filter.sortOrder || 'desc';
+        const page = filter.page || 1;
+        const limit = filter.limit || 10;
+        const offset = (page - 1) * limit;
+        // Construct the SQL query with parameters
+        const query = `
+      SELECT * FROM payments
+      ORDER BY ${sortBy} ${sortOrder}
+      LIMIT $1 OFFSET $2
+    `;
+        const values = [limit, offset];
+        try {
+            const result = await this.pool.query(query, values);
+            return result.rows.map(row => new payment_1.PaymentEntity(row.id, row.user_id, row.course_id, row.amount, row.currency, row.status, row.created_at, row.updated_at));
+        }
+        catch (error) {
+            console.error('Error retrieving transactions:', error);
+            throw new Error('Failed to retrieve transactions');
+        }
     }
 }
 exports.PaymentRepositoryImpl = PaymentRepositoryImpl;

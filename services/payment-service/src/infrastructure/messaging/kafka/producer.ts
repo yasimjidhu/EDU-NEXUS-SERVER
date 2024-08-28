@@ -6,7 +6,7 @@ export class KafkaProducer {
   constructor() {
     const kafka = new Kafka({
       clientId: 'payment-service-client',
-      brokers: ['kafka:9093'] 
+      brokers: ['localhost:9092'] 
     });
     this.producer = kafka.producer();
   }

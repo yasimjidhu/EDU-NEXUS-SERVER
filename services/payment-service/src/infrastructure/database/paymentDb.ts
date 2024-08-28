@@ -4,7 +4,7 @@ dotenv.config()
 
 const dbConfig: PoolConfig = {
   user: process.env.POSTGRES_USER,
-  host: 'postgres',
+  host: 'localhost',
   database: process.env.POSTGRES_DB, 
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 5432,
@@ -17,7 +17,7 @@ export const StartPaymentDb = async () => {
     await pool.connect();
     console.log('Connected to PostgreSQL database');
   } catch (error:any) {
-    console.error('Error connecting to PostgreSQL database:', error.message);
+    console.error('Error connecting to PostgreSQL database:', error);
   }
 };
 
