@@ -22,5 +22,6 @@ export const router = Router();
 router.post('/create-checkout-session', paymentController.createCheckoutSession.bind(paymentController));
 router.post('/complete-purchase',paymentController.completePurchase.bind(paymentController))
 router.get('/find-transactions', paymentController.findTransactions.bind(paymentController));
+router.get('/find-transactions/:instructorId', paymentController.findInstructorCoursesTransaction.bind(paymentController));
 
 

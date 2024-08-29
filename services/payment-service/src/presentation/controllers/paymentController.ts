@@ -37,4 +37,16 @@ export class PaymentController {
       res.status(500).json({ error: error.message });
     }
   }
+  async  findInstructorCoursesTransaction(req: Request, res: Response): Promise<void> {
+    const {instructorId} = req.params ;
+  
+    try {
+      console.log('instructor id got>>>',instructorId)
+      // Convert query parameters to the correct format if necessary
+      const transactions = await this.paymentUseCase.getInstructorCoursesTransaction(instructorId);
+      res.status(200).json(transactions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }

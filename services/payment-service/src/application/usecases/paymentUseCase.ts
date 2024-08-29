@@ -44,6 +44,7 @@ export class PaymentUseCase {
         metadata: {
           courseId: course.course_id,
           courseName:course.course_name,
+          instructorId:course.instructor_id,
           email:course.email
         },
       });
@@ -57,36 +58,54 @@ export class PaymentUseCase {
 
   async create(sessionId: string): Promise<void> {
     try {
+      // Retrieve the session details from Stripe
       const session = await this.stripe.checkout.sessions.retrieve(sessionId);
-
+  
+      // Check if the payment is completed
       if (session.payment_status !== 'paid') {
         throw new Error('Payment not completed');
       }
-
+  
+      // Calculate admin and instructor amounts (e.g., 30% to admin and 70% to instructor)
+      const adminAmount = Math.round(session.amount_total! * 0.3);
+      const instructorAmount = Math.round(session.amount_total! * 0.7);
+  
+      // Create a new PaymentEntity with the session details
       const payment = new PaymentEntity(
         session.id,
-        session.client_reference_id!,
-        session.metadata?.courseId!,
-        session.amount_total!,
-        session.currency!,
-        'completed',
-        new Date(),
-        new Date()
+        session.client_reference_id!,     // User ID
+        session.metadata?.instructorId!,  // Instructor ID
+        session.metadata?.courseId!,      // Course ID
+        session.amount_total!,            // Total amount
+        adminAmount,                      // Admin amount
+        instructorAmount,                 // Instructor amount
+        session.currency!,                // Currency
+        'completed',                      // Status
+        new Date(),                       // Created at
+        new Date()                        // Updated at
       );
-
+  
+      // Save the payment record in the database
       const savedPayment = await this.paymentRepository.create(payment);
       console.log('Payment saved in DB:', savedPayment);
-
+  
+      // Publish enrollment event to the content service
       await this.publishEnrollmentEvent(session);
       console.log('Payment info sent to the content service');
-
+  
+      // Return the saved payment
       return savedPayment;
     } catch (error) {
       console.error('Error handling successful payment:', error);
+  
+      // Handle payment failure (log, send notifications, etc.)
       await this.handlePaymentFailure(sessionId, error);
+      
+      // Rethrow the error to indicate failure
       throw new Error('Failed to process payment');
     }
   }
+  
 
   private async publishEnrollmentEvent(
     session: Stripe.Checkout.Session,
@@ -96,6 +115,7 @@ export class PaymentUseCase {
         type: 'ENROLLMENT_CREATED',
         payload: {
           userId: session.client_reference_id!,
+          instructorId:session.metadata?.instructorId,
           courseId: session.metadata?.courseId!,
           enrolledAt: new Date(),
           completionStatus: 'enrolled',
@@ -218,5 +238,8 @@ export class PaymentUseCase {
       console.error('Error retrieving transactions:', error);
       throw new Error('Failed to retrieve transactions');
     }
-  }  
+  } 
+  async getInstructorCoursesTransaction(instructorId:string):Promise<PaymentEntity[]>{
+    return await this.paymentRepository.findByInstructorId(instructorId)
+  } 
 }

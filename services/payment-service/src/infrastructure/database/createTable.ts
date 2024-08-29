@@ -7,6 +7,7 @@ import pool from "./paymentDb";
          CREATE TABLE IF NOT EXISTS payments (
            id VARCHAR(255) PRIMARY KEY,
            user_id VARCHAR(255) NOT NULL,
+           instructor_id VARCHAR(255) NOT NULL,
            course_id VARCHAR(255) NOT NULL,
            amount INTEGER NOT NULL,
            currency VARCHAR(3) NOT NULL,

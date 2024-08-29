@@ -4,8 +4,11 @@ export class PaymentEntity {
     id?: string;
     sessionId: string;
     userId: string;
+    instructorId?:string;
     courseId:string;
     amount: number;
+    adminAmount:number;
+    instructorAmount:number;
     currency: string;
     status: 'pending' | 'completed' | 'failed';
     createdAt: Date;
@@ -14,8 +17,11 @@ export class PaymentEntity {
     constructor(
       sessionId: string,
       userId: string,
+      instructorId:string,
       courseId: string,
       amount: number,
+      adminAmount:number,
+      instructorAmount:number,
       currency: string,
       status: 'pending' | 'completed' | 'failed',
       createdAt: Date,
@@ -25,8 +31,11 @@ export class PaymentEntity {
       this.id = id;
       this.sessionId = sessionId;
       this.userId = userId;
+      this.instructorId = instructorId;
       this.courseId = courseId;
       this.amount = amount;
+      this.adminAmount= adminAmount;
+      this.instructorAmount= instructorAmount;
       this.currency = currency;
       this.status = status;
       this.createdAt = createdAt;

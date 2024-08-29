@@ -1,5 +1,6 @@
 export interface TCourse{
     user_id:string;
+    instructor_id:string;
     course_id:string;
     amount:number;
     currency:string;
