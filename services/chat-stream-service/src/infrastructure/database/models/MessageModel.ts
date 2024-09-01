@@ -5,6 +5,7 @@ const messageSchema = new mongoose.Schema({
   senderName: { type: String, required: false },
   senderProfile:{type:String,required:false},
   conversationId:{type:String,required:true},
+  recipientEmail:{type:String,required:false},
   text: { type: String, required: false },
   fileUrl: { type: String },
   fileType: { type: String },

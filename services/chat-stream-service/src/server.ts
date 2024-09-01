@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://frontend:5173',
+    origin: 'http://localhost:5173',
     credentials: true
   },
 });
@@ -48,7 +48,6 @@ io.use((socket: Socket, next: (err?: any) => void) => {
   try {
     const decoded = verifyAccessToken(token);
     (socket as any).decoded = decoded;
-    console.log('decoded user', decoded)
     next();
   } catch (err) {
     next(new Error('Authentication error'));
@@ -60,6 +59,11 @@ let onlineUsers: { [key: string]: boolean } = {};
 io.on('connection', (socket: Socket) => {
   const decodedUser = (socket as any).decoded;
   const email = decodedUser.email
+
+  // join room based user's unique identifiers
+  const userRoom = `user-${email}`;
+  socket.join(userRoom)
+  console.log(`User ${email} joined room ${userRoom}`)
 
   // Mark as online
   onlineUsers[email] = true;
@@ -85,8 +89,17 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('message', (message: Message) => {
-    const { conversationId, senderId } = message;
+    const { conversationId,recipientEmail } = message;
+
+    console.log('new message reached in server',message)
+
+    console.log('recipient email is',recipientEmail)
+    console.log('conversationid is',conversationId)
     socket.broadcast.to(conversationId).emit('message', message)
+
+    // emit a notification to the recipient's user specific unread count
+    const recipientRoom = `user-${recipientEmail}`;
+    io.to(recipientRoom).emit('newMessage',message)
   });
 
   socket.on('messageDelivered', async ({messageId,userId}: {messageId:string,userId:string}) => {
@@ -100,9 +113,7 @@ io.on('connection', (socket: Socket) => {
 
   socket.on('messageRead', async ({messageId,userId}: {messageId:string,userId:string}) => {
     try {
-      console.log('message read reached in server',messageId,userId)
       const updatedMessage = await chatUseCase.updateMessageStatus(messageId,userId, 'read')
-      console.log('updated message in message read',updatedMessage)
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
     } catch (error: any) {
       console.error('Error updating message status to delivered', error)

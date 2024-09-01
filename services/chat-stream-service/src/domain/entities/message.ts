@@ -1,6 +1,7 @@
 export interface Message {
-  id: string;
+  id?: string;
   conversationId: string;
+  recipientEmail?:string;
   senderId: string;
   senderName?:string;
   senderProfile?:string;
@@ -8,7 +9,8 @@ export interface Message {
   fileUrl?: string;
   fileType?: 'audio' | 'image' | 'video';
   status: string;
-  createdAt: Date;
+  createdAt?: Date;
+  updatedAt?:Date;
   _id?: string;
-  isGroup:boolean;
+  isGroup?:boolean;
 }

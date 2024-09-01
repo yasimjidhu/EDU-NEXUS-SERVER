@@ -22,8 +22,7 @@ export class ChatRepository implements IChatRepository {
       { new: true }
     ).exec();
 
-    console.log('updated message status',updatedMessage)
-  
+   
     return updatedMessage!.toObject();
   }
   async getMessagesByConversationId(conversationId: string): Promise<Message[]> {
@@ -34,7 +33,6 @@ export class ChatRepository implements IChatRepository {
   }
   async getMessagedStudentsIds(instructorId: string): Promise<string[]> {
     const messagedStudentsIds = await MessageModel.distinct('senderId', { conversationId: new RegExp(instructorId) })
-    console.log('messaged students id got from db', messagedStudentsIds)
     return messagedStudentsIds
   }
   async getGroupMessages(groupId: string): Promise<Message[]> {
@@ -89,7 +87,6 @@ export class ChatRepository implements IChatRepository {
         }
       ]);
   
-      console.log('unread data is', unreadData);
       return unreadData;
     } catch (error:any) {
       console.error('Error getting unread messages:', error);

@@ -19,7 +19,7 @@ export class UserServiceClient implements IUserServiceClient{
 
     constructor(){
         this.client = new userServiceProto.UserService(
-            'user-service:50052',
+            'localhost:50052',
             grpc.credentials.createInsecure()
         );
     }
@@ -32,7 +32,6 @@ export class UserServiceClient implements IUserServiceClient{
                     console.log(error)
                     reject(error)
                 }else{
-                    console.log('this is the messaged student data got from user service through grpc call',response.users)
                     resolve(response.users)
                 }
             })
