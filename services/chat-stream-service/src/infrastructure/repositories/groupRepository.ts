@@ -29,33 +29,38 @@ export class GroupRepository {
         throw new Error(`Error adding users to group: ${error.message}`);
       }
     }
-    async removeUserFromGroup(groupId: string, userId: string): Promise<void> {
-      await GroupModel.findByIdAndUpdate(groupId, { $pull: { members: userId } });
-    }
+    async removeUserFromGroup(groupId: string, userId: string): Promise<Group | null> {
+      const updatedGroup = await GroupModel.findByIdAndUpdate(
+          groupId,
+          { $pull: { members: userId } },
+          { new: true } // Return the updated group document
+      );
+  
+      return updatedGroup?.toObject() as Group;
+  }
+  
     async getGroupById(groupId:string):Promise<Group |undefined>{
       const groupData = await GroupModel.findById(groupId)
       return groupData?.toObject()
     }
-    async  getJoinedGroupsByUserId(userId: string): Promise<Group[]> {
+    async getJoinedGroupsByUserId(userId: string): Promise<Group[]> {
       const joinedGroups = await GroupModel.aggregate([
         {
-          $unwind: '$members',
+          $match: { members: userId }, // Match groups where the user is a member
         },
         {
-          $match: { members: userId }, 
-        },
-        {
-          $group: {
-            _id: '$_id', 
-            name: { $first: '$name' },
-            image: { $first: '$image' },
-            description: { $first: '$description' },
-            members: { $push: '$members' }, 
-            createdAt: { $first: '$createdAt' },
-            updatedAt: { $first: '$updatedAt' },
+          $project: {
+            _id: 1,
+            name: 1,
+            image: 1,
+            description: 1,
+            members: 1,
+            createdAt: 1,
+            updatedAt: 1,
           },
         },
       ]);
       return joinedGroups as Group[];
     }
+    
 }

@@ -10,6 +10,7 @@ export class GroupController {
 
         try {
             const group: Group = await this.groupUseCase.createGroup(name, image, description, members);
+            console.log('response of create group',group)
             res.status(201).json({ success: true, group });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });
@@ -36,8 +37,8 @@ export class GroupController {
             return;
         }
         try {
-            await this.groupUseCase.removeUserFromGroup(groupId, userId);
-            res.status(200).json({ success: true });
+            const group = await this.groupUseCase.removeUserFromGroup(groupId, userId);
+            res.status(200).json({ success: true,group });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });
         }
@@ -65,6 +66,7 @@ export class GroupController {
         const { userIds } = req.body
         try {
             const group = await this.groupUseCase.addUsersToGroup(groupId, userIds);
+            console.log('added grups is',group)
             res.status(200).json({ success: true, group });
         } catch (error: any) {
             res.status(400).json({ success: false, error: error.message });

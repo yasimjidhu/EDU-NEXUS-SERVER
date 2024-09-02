@@ -91,10 +91,6 @@ io.on('connection', (socket: Socket) => {
   socket.on('message', (message: Message) => {
     const { conversationId,recipientEmail } = message;
 
-    console.log('new message reached in server',message)
-
-    console.log('recipient email is',recipientEmail)
-    console.log('conversationid is',conversationId)
     socket.broadcast.to(conversationId).emit('message', message)
 
     // emit a notification to the recipient's user specific unread count
