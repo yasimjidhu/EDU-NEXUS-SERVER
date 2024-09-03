@@ -9,7 +9,7 @@ export class UserController {
     private authorizeUserUseCase: AuthorizeUserUseCase,
     private profileUseCase: ProfileUseCase,
     private authService: AuthService
-  ) {}
+  ) { }
 
   async registerUserHandler(req: Request, res: Response): Promise<void> {
     try {
@@ -31,8 +31,8 @@ export class UserController {
   async getUserHandler(req: Request, res: Response): Promise<void> {
     try {
       const { access_token } = req.cookies;
-      const decoded = this.authService.verifyAccessToken(access_token) as {email: string;};
-      console.log('decoded in getusre',decoded)
+      const decoded = this.authService.verifyAccessToken(access_token) as { email: string; };
+      console.log('decoded in getusre', decoded)
       const user = await this.profileUseCase.getUser(decoded.email);
       res.status(200).json({ message: "User retrieved successfully", user: user });
     } catch (error: any) {
@@ -48,7 +48,7 @@ export class UserController {
       const updatedUser = await this.authorizeUserUseCase.approveInstructor(
         email
       );
-      
+
       res
         .status(200)
         .json({
@@ -107,43 +107,63 @@ export class UserController {
       res.status(500).json({ message: error.message });
     }
   }
-  async getAllUsers(req:Request,res:Response):Promise<void>{
+  async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
       const allUsers = await this.profileUseCase.getAllUsers();
       res.status(200).json({ allUsers: allUsers });
-    } catch (error:any) {
-      console.log(error);
-      res.status(500).json({ message: error.message });
-    }
-  }
-  
-  async blockUser(req:Request,res:Response):Promise<void>{
-    try {
-      const response = await this.profileUseCase.blockUser(req.body.email)
-      res.status(200).json({email:response})
-    } catch (error:any) {
-      console.log(error);
-      res.status(500).json({ message: error.message });
-    }
-  }
-  async unBlockUser(req:Request,res:Response):Promise<void>{
-    try {
-      const response = await this.profileUseCase.unBlockUser(req.body.email)
-      res.status(200).json({email:response})
-    } catch (error:any) {
-      console.log(error);
-      res.status(500).json({ message: error.message });
-    }
-  }
-  async updateUserDetails(req:Request,res:Response):Promise<void>{
-    const {email} = req.params
-    try {
-      const updatedUser = await this.profileUseCase.updateUserDetails(email,req.body.updateData)
-      res.status(200).json(updatedUser)
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error);
       res.status(500).json({ message: error.message });
     }
   }
 
+  async blockUser(req: Request, res: Response): Promise<void> {
+    try {
+      const response = await this.profileUseCase.blockUser(req.body.email)
+      res.status(200).json({ email: response })
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+  async unBlockUser(req: Request, res: Response): Promise<void> {
+    try {
+      const response = await this.profileUseCase.unBlockUser(req.body.email)
+      res.status(200).json({ email: response })
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+  async updateUserDetails(req: Request, res: Response): Promise<void> {
+    const { email } = req.params
+    try {
+      const updatedUser = await this.profileUseCase.updateUserDetails(email, req.body.updateData)
+      res.status(200).json(updatedUser)
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+  async submitFeedback(req: Request, res: Response): Promise<void> {
+    const { feedback } = req.body
+    try {
+      const response = await this.profileUseCase.submitFeedback(feedback)
+      console.log('rsopnse of submit feedback in contrleler',response)
+      res.status(200).json({ success: true, message: response })
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+  async getFeedbacks(req: Request, res: Response): Promise<void> {
+    try {
+      const feedbacks = await this.profileUseCase.getFeedbacks()
+      console.log('rsopnse of get feedback in contrleler',feedbacks)
+      res.status(200).json(feedbacks)
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
 }

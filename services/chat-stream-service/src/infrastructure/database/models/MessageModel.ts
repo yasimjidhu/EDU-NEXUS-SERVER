@@ -11,6 +11,7 @@ const messageSchema = new mongoose.Schema({
   fileType: { type: String },
   status: { type: String, enum: ['sent', 'delivered', 'read'], default: 'sent' },
   isGroup:{type:Boolean,required:false,default:false},
+  groupId:{type:String,required:false},
   readBy: [{ type: mongoose.Schema.Types.ObjectId,required:false }],  // Array to store users who have read this message
   createdAt: { type: Date, required: true, default: Date.now },
 });

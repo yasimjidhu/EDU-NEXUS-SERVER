@@ -36,4 +36,7 @@ router.get('/getInstructors',userController.getAllInstructors.bind(userControlle
 router.get('/verifiedInstructors',userController.getVerifiedInstructors.bind(userController))
 router.get('/unVerifiedInstructors',userController.getUnVerifiedInstructors.bind(userController))
 
+router.post('/feedback',userController.submitFeedback.bind(userController))
+router.get('/feedbacks',userController.getFeedbacks.bind(userController))
+
 export default router;

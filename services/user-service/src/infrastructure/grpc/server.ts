@@ -55,9 +55,7 @@ export class GrpcServer {
   }
   private async getStudents(call: grpc.ServerUnaryCall<any, any>, callback: grpc.sendUnaryData<any>): Promise<void> {
     try { 
-      console.log('user call received in user-service getstudents', call.request.user_ids);
       const students = await this.userUseCase.getStudentsByIds(call.request.user_ids);
-      console.log('fetched messaged students in user-service',students)
       callback(null, { users:students });
     } catch (error: any) {
       callback({

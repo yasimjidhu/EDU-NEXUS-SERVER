@@ -1,4 +1,5 @@
 
+import { FeedbackEntity } from "../../domain/entities/feedback";
 import { UserEntity } from "../../domain/entities/user";
 import { sendBlockUserMessage, sendUnblockUserMessage } from "../../infrastructure/kafka/kafkaService";
 import { UserRepository } from "../../infrastructure/repositories/user";
@@ -68,5 +69,11 @@ export class ProfileUseCase{
     }
     async updateUserDetails(email:string,data:Partial<UserEntity>):Promise<UserEntity | null>{
         return await this.userRepository.updateUserDetails(email,data)
+    }
+    async submitFeedback(feedback:FeedbackEntity):Promise<FeedbackEntity|null>{
+        return await this.userRepository.postFeedback(feedback)
+    }
+    async getFeedbacks():Promise<FeedbackEntity[]|[]>{
+        return await this.userRepository.getFeedbacks()
     }
 }

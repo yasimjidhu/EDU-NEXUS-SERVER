@@ -2,6 +2,8 @@ import { UserRepository } from "./user";
 import { UserEntity } from "../../domain/entities/user";
 import { User } from "../database/models/User";
 import mongoose from "mongoose";
+import { FeedbackEntity } from "../../domain/entities/feedback";
+import { Feedback } from "../database/models/feedbacks";
 
 export class UserRepositoryImpl implements UserRepository {
   async save(user: UserEntity): Promise<UserEntity> {
@@ -181,4 +183,27 @@ export class UserRepositoryImpl implements UserRepository {
       throw new Error(`Failed to update user details: ${error.message}`);
     }
   }
+  async postFeedback(feedback: FeedbackEntity): Promise<FeedbackEntity | null> {
+    try {
+        console.log('Saving feedback details in the server:', feedback);
+
+        const feedbackInstance = new Feedback(feedback); 
+        const savedFeedback = await feedbackInstance.save(); 
+
+        return savedFeedback ? (savedFeedback.toObject() as FeedbackEntity) : null;
+    } catch (error: any) {
+        console.error('Error saving feedback details:', error);
+        throw new Error(`Failed to save feedback details: ${error.message}`);
+    }
+  }
+  async getFeedbacks(): Promise<FeedbackEntity[] | []> {
+    try {
+        const feedbacks = await Feedback.find()
+        console.log('all feedbacks',feedbacks)
+        return feedbacks.map((feedback) => feedback.toObject() as FeedbackEntity);
+    } catch (error: any) {
+        console.error('Error saving feedback details:', error);
+        throw new Error(`Failed to save feedback details: ${error.message}`);
+    }
+  }  
 }

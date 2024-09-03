@@ -1,3 +1,4 @@
+import { FeedbackEntity } from "../../domain/entities/feedback";
 import { UserEntity } from "../../domain/entities/user";
 
 export interface UserRepository {
@@ -14,4 +15,6 @@ export interface UserRepository {
   getVerifiedInstructors(): Promise<UserEntity[]>
   getUnVerifiedInstructors(): Promise<UserEntity[]>
   updateUserDetails(email: string, data: Partial<UserEntity>): Promise<UserEntity | null>
+  postFeedback(feedback:FeedbackEntity): Promise<FeedbackEntity | null>
+  getFeedbacks(): Promise<FeedbackEntity[] | []>
 } 
