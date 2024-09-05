@@ -79,8 +79,10 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('join', (conversationId: string) => {
-    socket.join(conversationId);
-    console.log(`User joined room ${conversationId}`);
+    if (!socket.rooms.has(conversationId)){
+      socket.join(conversationId);  
+      console.log(`User joined room ${conversationId}`);
+    }
   });
 
   socket.on('leave', (conversationId: string) => {
