@@ -1,26 +1,10 @@
-import jwt,{JwtPayload} from 'jsonwebtoken'
 import {Request,Response,NextFunction} from 'express'
 import {TokenRepository} from 'token-repository'
+import jwt from 'jsonwebtoken'
 import Redis  from 'ioredis';
 import dotenv from 'dotenv'
 dotenv.config()
 
-const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET || ''
-
-export function verifyAccessToken(token: string|undefined): JwtPayload | null {
-    try {
-      if(token){
-        return jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
-      }else{
-        return null
-      }
-    } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
-        throw new Error('Access token expired');
-      }
-      throw new Error('Invalid access token');
-    }
-}
 
 
 declare global {  
@@ -31,15 +15,16 @@ declare global {
   }
 }
 
-
-
+const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET || ""
+console.log('host:',process.env.REDIS_HOST)
+console.log('port:',parseInt(process.env.REDIS_PORT || '6379'))
 const redisClient = new Redis({
   host: process.env.REDIS_HOST || 'localhost',
   port: parseInt(process.env.REDIS_PORT || '6379'),
 });
 const tokenRepository = new TokenRepository(redisClient)
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const access_token = req.cookies.access_token;
 
   if (!access_token) {
@@ -90,3 +75,5 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     return res.status(403).json({ message: 'Invalid token' });
   }
 };
+
+export default authMiddleware

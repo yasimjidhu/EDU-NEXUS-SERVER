@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { RegisterUserUseCase } from "../../use-case/RegisterUser";
-import { AuthorizeUserUseCase } from "../../use-case/AuthorizeUser";
-import { ProfileUseCase } from "../../use-case/ProfileUseCase";
+import { RegisterUserUseCase } from "../../../application/use-case/RegisterUser";
+import { AuthorizeUserUseCase } from "../../../application/use-case/AuthorizeUser";
+import { ProfileUseCase } from "../../../application/use-case/ProfileUseCase";
 import { AuthService } from "../../../adapters/services/verfiyAccessToken";
 export class UserController {
   constructor(
@@ -149,7 +149,7 @@ export class UserController {
     const { feedback } = req.body
     try {
       const response = await this.profileUseCase.submitFeedback(feedback)
-      console.log('rsopnse of submit feedback in contrleler',response)
+      console.log('rsopnse of submit feedback in contrleler', response)
       res.status(200).json({ success: true, message: response })
     } catch (error: any) {
       console.log(error);
@@ -159,7 +159,7 @@ export class UserController {
   async getFeedbacks(req: Request, res: Response): Promise<void> {
     try {
       const feedbacks = await this.profileUseCase.getFeedbacks()
-      console.log('rsopnse of get feedback in contrleler',feedbacks)
+      console.log('rsopnse of get feedback in contrleler', feedbacks)
       res.status(200).json(feedbacks)
     } catch (error: any) {
       console.log(error);

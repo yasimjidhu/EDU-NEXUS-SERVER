@@ -7,6 +7,8 @@ import { UserServiceClient } from '../../infrastructure/grpc/client';
 import { GroupRepository } from '../../infrastructure/repositories/groupRepository';
 import { GroupUseCase } from '../../application/useCases/groupUseCase';
 import { GroupController } from '../../presentation/controllers/groupController';
+import { authMiddleware } from '../middlewares/authMiddleware';
+import { instructorMiddleware, studentMiddleware } from '../middlewares/authorizationMiddleware';
 
 const router = Router();
 
@@ -27,19 +29,19 @@ const chatController = new ChatController(chatUseCase);
 const groupController = new GroupController(groupUseCase)
 
 // messages related routes
-router.post('/message', chatController.sendMessage.bind(chatController));
+router.post('/message',authMiddleware, chatController.sendMessage.bind(chatController));
 router.get('/messages/:conversationId', chatController.getMessages.bind(chatController));
-router.get('/messaged-students/:instructorId', chatController.getMessagedStudents.bind(chatController))
+router.get('/messaged-students/:instructorId',chatController.getMessagedStudents.bind(chatController))
 router.get('/group-messages/:groupId',chatController.getGroupMessages.bind(chatController))
 router.get('/unread-messages/:userId',chatController.getUnreadMessages.bind(chatController))
 
 // group related routes
-router.post('/group', groupController.createGroup.bind(groupController))
-router.post('/group/join', groupController.joinGroup.bind(groupController))
-router.delete('/group/leave', groupController.leaveGroup.bind(groupController))
+router.post('/group', authMiddleware,instructorMiddleware, groupController.createGroup.bind(groupController))
+router.post('/group/join',authMiddleware, groupController.joinGroup.bind(groupController))
+router.delete('/group/leave',authMiddleware, groupController.leaveGroup.bind(groupController))
 router.get('/group/:groupId', groupController.getGroup.bind(groupController))
 router.get('/joined-groups/:userId', groupController.getUserJoinedGroups.bind(groupController))
-router.post('/addToGroup/:groupId', groupController.addUsersToGroup.bind(groupController))
-router.delete('/removeFromGroup/:groupId', groupController.addUsersToGroup.bind(groupController))
+router.post('/addToGroup/:groupId',authMiddleware,instructorMiddleware,studentMiddleware, groupController.addUsersToGroup.bind(groupController))
+router.delete('/removeFromGroup/:groupId',authMiddleware,instructorMiddleware, groupController.addUsersToGroup.bind(groupController))
 
 export default router;

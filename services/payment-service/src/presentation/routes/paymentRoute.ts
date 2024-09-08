@@ -5,6 +5,8 @@ import { PaymentUseCase } from '../../application/usecases/paymentUseCase';
 import { PaymentRepositoryImpl } from '../../infrastructure/repositories/paymentRepository';
 import { PaymentController } from '../controllers/paymentController';
 import { KafkaProducer } from '../../infrastructure/messaging/kafka/producer';
+import { authMiddleware } from '../middlewares/authenticationMiddleware';
+import { adminMiddleware, studentMiddleware } from '../middlewares/authorizationMiddleware';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
 
@@ -19,9 +21,9 @@ const paymentController = new PaymentController(paymentUseCase);
 export const router = Router();
 
 
-router.post('/create-checkout-session', paymentController.createCheckoutSession.bind(paymentController));
-router.post('/complete-purchase',paymentController.completePurchase.bind(paymentController))
-router.get('/find-transactions', paymentController.findTransactions.bind(paymentController));
-router.get('/find-transactions/:instructorId', paymentController.findInstructorCoursesTransaction.bind(paymentController));
+router.post('/create-checkout-session',authMiddleware,studentMiddleware, paymentController.createCheckoutSession.bind(paymentController));
+router.post('/complete-purchase',authMiddleware,studentMiddleware,paymentController.completePurchase.bind(paymentController))
+router.get('/find-transactions',authMiddleware,adminMiddleware, paymentController.findTransactions.bind(paymentController));
+router.get('/find-transactions/:instructorId',authMiddleware, paymentController.findInstructorCoursesTransaction.bind(paymentController));
 
 
