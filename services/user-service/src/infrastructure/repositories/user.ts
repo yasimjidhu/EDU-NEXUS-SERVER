@@ -6,6 +6,9 @@ export interface UserRepository {
   findByEmail(email: string): Promise<UserEntity | null>;
   approve(email: string): Promise<UserEntity | null>
   reject(email: string): Promise<UserEntity | null>
+  saveStripeAccountId(instructorId: string, stripeAccountId: string): Promise<void>
+  updatePaymentStatus(stripeAccountId: string,chargesEnabled : boolean): Promise<string>
+  getStripeAccountId(instructorId: string): Promise<string | null> 
   findAllInstructors(): Promise<UserEntity[]>
   findInstructors(instructorsId: string[]): Promise<UserEntity[] | null>
   findStudentsByIds(studentsIds: string[]): Promise<UserEntity[] | null>;

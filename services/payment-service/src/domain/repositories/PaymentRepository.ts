@@ -6,4 +6,5 @@ export interface PaymentRepository {
     findBySessionId(sessionId:string):Promise<PaymentEntity | null>
     findByInstructorId(instructorId:string):Promise<PaymentEntity[]>
     findTransactions(filter: any): Promise<PaymentEntity[]>;
+    updateTransferStatus(id: string,type: 'admin' | 'instructor',status: 'pending' | 'completed' | 'failed'): Promise<void> 
   }

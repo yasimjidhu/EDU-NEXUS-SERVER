@@ -10,6 +10,8 @@ import pool from "./paymentDb";
            instructor_id VARCHAR(255) NOT NULL,
            course_id VARCHAR(255) NOT NULL,
            amount INTEGER NOT NULL,
+           admin_account_id VARCHAR(255) NOT NULL,
+           instructor_account_id VARCHAR(255) NOT NULL,
            currency VARCHAR(3) NOT NULL,
            status VARCHAR(20) NOT NULL,
            created_at TIMESTAMP NOT NULL,

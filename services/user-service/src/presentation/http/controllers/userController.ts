@@ -117,6 +117,18 @@ export class UserController {
     }
   }
 
+  async saveStripeId(req: Request, res: Response): Promise<void> {
+    const instructorId = req.params.userId as string
+    const {stripeAccountId} = req.body
+    try {
+      const data = await this.profileUseCase.saveStripeAccountId(instructorId,stripeAccountId);
+      res.status(200).json(data);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+
   async blockUser(req: Request, res: Response): Promise<void> {
     try {
       const response = await this.profileUseCase.blockUser(req.body.email)

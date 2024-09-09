@@ -17,6 +17,10 @@ const userSchema = new Schema(
 			type: String,
 			required: false,
 		},
+		stripeAccountId:{
+			type:String,
+			required:false
+		},
 		role: {
 			type: String,
 			enum: ["student", "instructor", "admin"],
@@ -61,6 +65,14 @@ const userSchema = new Schema(
 		profit: {
             type: Number,
 			default: 0,
+		},
+		chargesEnabled:{
+			type:Boolean,
+			required:false
+		},
+		onboardingComplete:{
+			type:Boolean,
+			required:false
 		},
         isBlocked: {
             type: Boolean,

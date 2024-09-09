@@ -3,36 +3,46 @@ import { TCourse } from '../../shared/types/courseTypes';
 import { KafkaProducer } from '../../infrastructure/messaging/kafka/producer';
 import { PaymentEntity } from '../../domain/entities/payment';
 import Stripe from 'stripe';
+import { StripeService } from '../../infrastructure/services/stripeService';
 
 export class PaymentUseCase {
   private paymentRepository: PaymentRepository;
   private stripe: Stripe;
   private producer: KafkaProducer;
+  private stripeService: StripeService;
 
   constructor(
     paymentRepository: PaymentRepository,
     stripe: Stripe,
     producer: KafkaProducer,
+    stripeService: StripeService
   ) {
     this.paymentRepository = paymentRepository;
     this.stripe = stripe;
     this.producer = producer;
+    this.stripeService = stripeService
   }
 
-  async createCheckoutSession(
-    course: TCourse,
-  ): Promise<Stripe.Checkout.Session> {
+  async createCheckoutSession(course: TCourse): Promise<Stripe.Checkout.Session> {
+    console.log('course in payment',course)
     try {
+      const { currency, course_name, amount, user_id, course_id, instructor_id, email, adminAccountId, instructorAccountId } = course;
+
+      if (!currency || !course_name || !amount || !user_id || !course_id || !instructor_id || !email || !adminAccountId || !instructorAccountId) {
+        throw new Error('Missing required course information');
+      }
+
+      // Create a Stripe Checkout session
       const session = await this.stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
           {
             price_data: {
-              currency: course.currency,
+              currency,
               product_data: {
-                name: course.course_name,
+                name: course_name,
               },
-              unit_amount: Math.round(course.amount * 100), // Ensure integer
+              unit_amount: Math.round(amount * 100),
             },
             quantity: 1,
           },
@@ -40,12 +50,14 @@ export class PaymentUseCase {
         mode: 'payment',
         success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.FRONTEND_URL}/cancel`,
-        client_reference_id: course.user_id,
+        client_reference_id: user_id,
         metadata: {
-          courseId: course.course_id,
-          courseName:course.course_name,
-          instructorId:course.instructor_id,
-          email:course.email
+          courseId: course_id,
+          courseName: course_name,
+          instructorId: instructor_id,
+          adminAccountId: adminAccountId,
+          instructorAccountId: instructorAccountId,
+          email,
         },
       });
 
@@ -58,54 +70,99 @@ export class PaymentUseCase {
 
   async create(sessionId: string): Promise<void> {
     try {
-      // Retrieve the session details from Stripe
       const session = await this.stripe.checkout.sessions.retrieve(sessionId);
-  
-      // Check if the payment is completed
+
       if (session.payment_status !== 'paid') {
         throw new Error('Payment not completed');
       }
-  
-      // Calculate admin and instructor amounts (e.g., 30% to admin and 70% to instructor)
+
       const adminAmount = Math.round(session.amount_total! * 0.3);
       const instructorAmount = Math.round(session.amount_total! * 0.7);
-  
-      // Create a new PaymentEntity with the session details
+
+      // Save payment record in the database
       const payment = new PaymentEntity(
         session.id,
-        session.client_reference_id!,     // User ID
-        session.metadata?.instructorId!,  // Instructor ID
-        session.metadata?.courseId!,      // Course ID
-        session.amount_total!,            // Total amount
-        adminAmount,                      // Admin amount
-        instructorAmount,                 // Instructor amount
-        session.currency!,                // Currency
-        'completed',                      // Status
-        new Date(),                       // Created at
-        new Date()                        // Updated at
+        session.client_reference_id!,
+        session.metadata?.instructorId!,
+        session.metadata?.courseId!,
+        session.amount_total!,
+        adminAmount,
+        instructorAmount,
+        session.currency!,
+        'completed',
+        new Date(),
+        new Date(),
+        session.metadata?.adminAccountId,
+        session.metadata?.instructorAccountId,
+        'pending',
+        'pending'
       );
-  
-      // Save the payment record in the database
+
       const savedPayment = await this.paymentRepository.create(payment);
       console.log('Payment saved in DB:', savedPayment);
-  
-      // Publish enrollment event to the content service
+
+      // Create transfers
+      await this.stripe.transfers.create({
+        amount: instructorAmount,
+        currency: session.currency!,
+        destination: session.metadata?.instructorAccountId!,
+        transfer_group: session.id,
+      });
+
+      // Update instructor transfer status to 'completed'
+      await this.updatePaymentStatus(session.id, 'instructor', 'completed');
+
+      await this.stripe.transfers.create({
+        amount: adminAmount,
+        currency: session.currency!,
+        destination: session.metadata?.adminAccountId!, // Use actual admin account ID from metadata
+        transfer_group: session.id,
+      });
+
+      // Update admin transfer status to 'completed'
+      await this.updatePaymentStatus(session.id, 'admin', 'completed');
+
+      // Publish enrollment event to content service
       await this.publishEnrollmentEvent(session);
       console.log('Payment info sent to the content service');
-  
-      // Return the saved payment
-      return savedPayment;
     } catch (error) {
       console.error('Error handling successful payment:', error);
-  
-      // Handle payment failure (log, send notifications, etc.)
       await this.handlePaymentFailure(sessionId, error);
-      
-      // Rethrow the error to indicate failure
       throw new Error('Failed to process payment');
     }
   }
-  
+
+  // Method to update the payment status in the database
+  async updatePaymentStatus(sessionId: string, type: 'admin' | 'instructor', status: 'completed' | 'failed'): Promise<void> {
+    try {
+      const updatedPayment = await this.paymentRepository.updateTransferStatus(sessionId, type, status);
+      console.log(`${type} transfer status updated to ${status} for session ${sessionId}`);
+    } catch (error) {
+      console.error(`Error updating ${type} transfer status for session ${sessionId}:`, error);
+    }
+  }
+
+  // Method to handle payment failure
+  async handlePaymentFailure(sessionId: string, error: any): Promise<void> {
+    try {
+      // Update payment status to failed in case of any error
+      await this.updatePaymentStatus(sessionId, 'admin', 'failed');
+      await this.updatePaymentStatus(sessionId, 'instructor', 'failed');
+      console.error(`Payment process failed for session ${sessionId}:`, error);
+    } catch (updateError) {
+      console.error('Error updating payment status to failed:', updateError);
+    }
+  }
+
+  public async createConnectedAccount(instructorId: string, email: string): Promise<any> {
+    return await this.stripeService.createConnectedAccount(instructorId, email)
+  }
+  public async createAccountLink(accountId: string): Promise<any> {
+    return await this.stripeService.createAccountLink(accountId)
+  }
+  public async handleOnboardingCompletion(accountId: string): Promise<any> {
+    return await this.stripeService.checkAccountStatus(accountId)
+  }
 
   private async publishEnrollmentEvent(
     session: Stripe.Checkout.Session,
@@ -115,7 +172,7 @@ export class PaymentUseCase {
         type: 'ENROLLMENT_CREATED',
         payload: {
           userId: session.client_reference_id!,
-          instructorId:session.metadata?.instructorId,
+          instructorId: session.metadata?.instructorId,
           courseId: session.metadata?.courseId!,
           enrolledAt: new Date(),
           completionStatus: 'enrolled',
@@ -163,44 +220,44 @@ export class PaymentUseCase {
       throw new Error('Failed to refund payment');
     }
   }
-  async handlePaymentFailure(sessionId:string,error:any):Promise<void>{
+  // async handlePaymentFailure(sessionId: string, error: any): Promise<void> {
 
-    console.log('payment failure funciton called')
-    const maxRetries  = 3;
-    let retries = 0;
+  //   console.log('payment failure funciton called')
+  //   const maxRetries = 3;
+  //   let retries = 0;
 
-    while(retries < maxRetries ){
-      try {
-        const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+  //   while (retries < maxRetries) {
+  //     try {
+  //       const session = await this.stripe.checkout.sessions.retrieve(sessionId);
 
-        // update payment status in the database
-        await this.paymentRepository.updateStatus(sessionId,'failed');
+  //       // update payment status in the database
+  //       await this.paymentRepository.updateStatus(sessionId, 'failed');
 
-        // notify the user about the payment failure
-        await this.notifyPaymentFailure(session)
+  //       // notify the user about the payment failure
+  //       await this.notifyPaymentFailure(session)
 
-        console.error('Payment Failed',{
-          sessionId,
-          userId:session.client_reference_id,
-          courseId:session.metadata?.courseId,
-          error:error.message,
-        });
+  //       console.error('Payment Failed', {
+  //         sessionId,
+  //         userId: session.client_reference_id,
+  //         courseId: session.metadata?.courseId,
+  //         error: error.message,
+  //       });
 
 
-        break
-      } catch (retryError) {
-        retries++
-        
-        if(retries >= maxRetries){
-          console.error('Max retries reached for handling payment failure:',retryError);
-          throw new Error('Failed to handle payment failure after multiple attempts')
-        }
+  //       break
+  //     } catch (retryError) {
+  //       retries++
 
-        // wait before retrying 
-        await new Promise(resolve => setTimeout(resolve,1000* Math.pow(2,retries)))
-      }
-    }
-  }
+  //       if (retries >= maxRetries) {
+  //         console.error('Max retries reached for handling payment failure:', retryError);
+  //         throw new Error('Failed to handle payment failure after multiple attempts')
+  //       }
+
+  //       // wait before retrying 
+  //       await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retries)))
+  //     }
+  //   }
+  // }
   private async notifyPaymentFailure(session: Stripe.Checkout.Session): Promise<void> {
     const userId = session.client_reference_id!;
     const courseId = session.metadata?.courseId!;
@@ -210,7 +267,7 @@ export class PaymentUseCase {
     const notificationPayload = {
       type: 'PAYMENT_FAILURE_NOTIFICATION',
       payload: {
-        email:email,
+        email: email,
         message: `Your payment for ${courseName} has failed. Please try again or contact support if the issue persists.`,
         metadata: {
           courseId: courseId,
@@ -232,14 +289,14 @@ export class PaymentUseCase {
     try {
       // Here we assume filter is already in the correct format
       const transactions = await this.paymentRepository.findTransactions(filter);
-      console.log('transactions in usecase',transactions)
+      console.log('transactions in usecase', transactions)
       return transactions;
     } catch (error) {
       console.error('Error retrieving transactions:', error);
       throw new Error('Failed to retrieve transactions');
     }
-  } 
-  async getInstructorCoursesTransaction(instructorId:string):Promise<PaymentEntity[]>{
+  }
+  async getInstructorCoursesTransaction(instructorId: string): Promise<PaymentEntity[]> {
     return await this.paymentRepository.findByInstructorId(instructorId)
-  } 
+  }
 }

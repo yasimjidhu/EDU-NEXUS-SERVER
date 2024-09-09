@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { router } from './presentation/routes/paymentRoute';
 import { StartPaymentDb } from './infrastructure/database/paymentDb';
 import initializeDatabase from './infrastructure/database/createTable';
+import { createTestCharge } from './infrastructure/services/test';
 
 
 
@@ -17,6 +18,14 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/payment', router)
+
+  // Example usage:
+  createTestCharge(20000).then(charge => {
+    console.log('Charge details:', charge);
+  }).catch(error => {
+    console.error('Failed to create charge:', error);
+  });
+  
 
 StartPaymentDb()
 initializeDatabase()

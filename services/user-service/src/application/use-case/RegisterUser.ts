@@ -38,8 +38,9 @@ export class RegisterUserUseCase {
         phone: request.phone,
         social: '',
       },
-      request.qualification,
-      request.cv 
+      request.qualification ,
+      request.cv,
+      undefined,
     );
     user.profit = 0;
     user.isBlocked = false;

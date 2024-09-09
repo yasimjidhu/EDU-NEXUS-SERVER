@@ -68,6 +68,34 @@ export class PaymentRepositoryImpl implements PaymentRepository {
 
     await this.pool.query(query, values);
   }
+
+  async updateTransferStatus(
+    id: string,
+    type: 'admin' | 'instructor',
+    status: 'pending' | 'completed' | 'failed'
+  ): Promise<void> {
+    let query: string;
+    
+    // Determine which field to update based on the type (admin or instructor)
+    if (type === 'admin') {
+      query = 'UPDATE payments SET admin_payout_status = $1, updated_at = $2 WHERE id = $3';
+    } else if (type === 'instructor') {
+      query = 'UPDATE payments SET instructor_payout_status = $1, updated_at = $2 WHERE id = $3';
+    } else {
+      throw new Error('Invalid transfer type. Must be "admin" or "instructor".');
+    }
+  
+    const values = [status, new Date(), id];
+  
+    try {
+      await this.pool.query(query, values);
+      console.log(`${type} transfer status updated to ${status} for payment ID ${id}`);
+    } catch (error) {
+      console.error(`Error updating ${type} transfer status for payment ID ${id}:`, error);
+      throw new Error('Failed to update transfer status');
+    }
+  }
+  
   async findBySessionId(sessionId: string): Promise<PaymentEntity | null> {
     const query = 'SELECT * FROM payments WHERE id = $1';
     const result = await this.pool.query(query, [sessionId]);
@@ -121,7 +149,7 @@ export class PaymentRepositoryImpl implements PaymentRepository {
         row.currency,
         row.status,
         row.created_at,
-        row.updated_at
+        row.updated_at,
       ));
     } catch (error) {
       console.error('Error retrieving transactions:', error);

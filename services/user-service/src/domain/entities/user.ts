@@ -18,7 +18,10 @@ export class UserEntity {
       social: string;
     },
     public qualification?:string,
-    public cv?: string // Making cv optional
+    public cv?: string, // Making cv optional
+    public stripeAccountId?: string,
+    public chargesEnabled?: boolean,
+    public onboardingComplete?: boolean,
   ) {
     this.profit = 0;
     this.isBlocked = false;

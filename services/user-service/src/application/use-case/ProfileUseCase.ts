@@ -70,6 +70,12 @@ export class ProfileUseCase{
     async updateUserDetails(email:string,data:Partial<UserEntity>):Promise<UserEntity | null>{
         return await this.userRepository.updateUserDetails(email,data)
     }
+    async saveStripeAccountId(instructorId: string, stripeAccountId: string): Promise<void> {
+        return await this.userRepository.saveStripeAccountId(instructorId,stripeAccountId)
+    }
+    async updatePaymentStatus(stripeAccountId: string, chargesEnabled: boolean): Promise<string> {
+        return await this.userRepository.updatePaymentStatus(stripeAccountId,chargesEnabled)
+    }
     async submitFeedback(feedback:FeedbackEntity):Promise<FeedbackEntity|null>{
         return await this.userRepository.postFeedback(feedback)
     }

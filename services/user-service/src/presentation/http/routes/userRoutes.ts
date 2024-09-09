@@ -25,6 +25,7 @@ const userController = new UserController(registerUserUseCase, authorizeUserUsec
 
 router.post('/register', userController.registerUserHandler.bind(userController));
 router.put('/update/:email',authMiddleware, userController.updateUserDetails.bind(userController));
+router.post('/save-stripe-id/:userId',userController.saveStripeId.bind(userController))
 
 router.post('/approve',authMiddleware,adminMiddleware,userController.approveInstructorHandler.bind(userController))
 router.post('/reject',authMiddleware,adminMiddleware, userController.rejectInstructorHandler.bind(userController))

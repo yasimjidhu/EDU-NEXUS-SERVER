@@ -1,14 +1,14 @@
 import express from "express";
-import cors from 'cors'
-import bodyParser from "body-parser";
-import connectDB from "./infrastructure/database/config";
-import dotenv from "dotenv";
-import cookieParser from 'cookie-parser'
-import userRouter from './presentation/http/routes/userRoutes'
 import axios from 'axios'
+import dotenv from "dotenv";
+import bodyParser from "body-parser";
+import cookieParser from 'cookie-parser'
+import connectDB from "./infrastructure/database/config";
+import userRouter from './presentation/http/routes/userRoutes'
 import { UserRepositoryImpl } from "./infrastructure/repositories/UserImpl";
 import { ProfileUseCase } from "./application/use-case/ProfileUseCase";
 import { GrpcServer } from "./infrastructure/grpc/server";
+import startConsumer from "./infrastructure/kafka/consumer";
 
 
 dotenv.config();
@@ -30,7 +30,7 @@ const startServer = async () => {
   try {
 
     await connectDB()
-
+    await startConsumer()
     const HTTP_PORT = process.env.HTTP_PORT || 3008
     app.listen(HTTP_PORT, () => {
       console.log(`User Service running on port ${HTTP_PORT}`)
