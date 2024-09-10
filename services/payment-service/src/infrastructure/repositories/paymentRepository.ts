@@ -11,56 +11,61 @@ export class PaymentRepositoryImpl implements PaymentRepository {
 
   async create(payment: PaymentEntity): Promise<void> {
     const client = await this.pool.connect();
-  
+
     try {
       await client.query('BEGIN');
-  
+
+      // Check if the payment already exists
       const checkQuery = 'SELECT id FROM payments WHERE id = $1';
       const checkResult = await client.query(checkQuery, [payment.id]);
-  
+
       if (checkResult.rows.length > 0) {
         // Payment already exists, don't insert again
         await client.query('COMMIT');
         return;
       }
-  
-      // Calculate the amounts to be distributed
-      const adminAmount = Math.round(payment.amount * 0.3);
-      const instructorAmount = Math.round(payment.amount * 0.7);
-  
+
+      // Insert query with new fields included
       const query = `
         INSERT INTO payments (
-          id, user_id,instructor_id, course_id, amount, currency, status, created_at, updated_at, admin_amount, instructor_amount
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          id, user_id, instructor_id, course_id, amount_in_inr, amount_in_usd, 
+          admin_amount, instructor_amount, currency, status, 
+          admin_account_id, instructor_account_id, admin_payout_status, instructor_payout_status, 
+          created_at, updated_at
+        ) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       `;
-  
+
       const values = [
         payment.id,
         payment.userId,
         payment.instructorId,
         payment.courseId,
-        payment.amount,
+        payment.amountInINR,
+        payment.amountInUSD,
+        payment.adminAmount,
+        payment.instructorAmount,
         payment.currency,
         payment.status,
+        payment.adminAccountId || null, // If not provided, insert as null
+        payment.instructorAccountId || null, // If not provided, insert as null
+        payment.adminPayoutStatus || 'pending', // Default to 'pending' if not provided
+        payment.instructorPayoutStatus || 'pending', // Default to 'pending' if not provided
         payment.createdAt,
         payment.updatedAt,
-        adminAmount,
-        instructorAmount
       ];
-  
+
       await client.query(query, values);
-  
       await client.query('COMMIT');
     } catch (error: any) {
       await client.query('ROLLBACK');
-      console.log(error);
+      console.error('Error creating payment:', error);
       throw new Error('Failed to create payment');
     } finally {
       client.release();
     }
   }
-  
+
 
   async updateStatus(id: string, status: 'pending' | 'completed' | 'failed'): Promise<void> {
     const query = 'UPDATE payments SET status = $1, updated_at = $2 WHERE id = $3';
@@ -75,7 +80,7 @@ export class PaymentRepositoryImpl implements PaymentRepository {
     status: 'pending' | 'completed' | 'failed'
   ): Promise<void> {
     let query: string;
-    
+
     // Determine which field to update based on the type (admin or instructor)
     if (type === 'admin') {
       query = 'UPDATE payments SET admin_payout_status = $1, updated_at = $2 WHERE id = $3';
@@ -84,9 +89,9 @@ export class PaymentRepositoryImpl implements PaymentRepository {
     } else {
       throw new Error('Invalid transfer type. Must be "admin" or "instructor".');
     }
-  
+
     const values = [status, new Date(), id];
-  
+
     try {
       await this.pool.query(query, values);
       console.log(`${type} transfer status updated to ${status} for payment ID ${id}`);
@@ -95,29 +100,35 @@ export class PaymentRepositoryImpl implements PaymentRepository {
       throw new Error('Failed to update transfer status');
     }
   }
-  
+
   async findBySessionId(sessionId: string): Promise<PaymentEntity | null> {
     const query = 'SELECT * FROM payments WHERE id = $1';
     const result = await this.pool.query(query, [sessionId]);
-  
+
     if (result.rows.length === 0) {
       return null;
     }
-  
+
     const row = result.rows[0];
     return new PaymentEntity(
+      row.session_id,
       row.user_id,
       row.instructor_id,
       row.course_id,
-      row.amount,
+      row.amount_in_inr,
+      row.amount_in_usd,
       row.admin_amount,
       row.instructor_amount,
       row.currency,
       row.status,
       row.created_at,
       row.updated_at,
-      row.id,
+      row.admin_account_id,
+      row.instructor_account_id,
+      row.admin_payout_status,
+      row.instructor_payout_status
     );
+
   }
   async findTransactions(filter: { sortBy?: string; sortOrder?: 'asc' | 'desc'; page?: number; limit?: number }): Promise<PaymentEntity[]> {
     // Default values for pagination and sorting
@@ -137,20 +148,26 @@ export class PaymentRepositoryImpl implements PaymentRepository {
 
     try {
       const result = await this.pool.query(query, values);
-      
+
       return result.rows.map(row => new PaymentEntity(
-        row.id,
+        row.session_id,
         row.user_id,
         row.instructor_id,
         row.course_id,
-        row.amount,
+        row.amount_in_inr,
+        row.amount_in_usd,
         row.admin_amount,
         row.instructor_amount,
         row.currency,
         row.status,
         row.created_at,
         row.updated_at,
+        row.admin_account_id,
+        row.instructor_account_id,
+        row.admin_payout_status,
+        row.instructor_payout_status
       ));
+
     } catch (error) {
       console.error('Error retrieving transactions:', error);
       throw new Error('Failed to retrieve transactions');
@@ -158,44 +175,55 @@ export class PaymentRepositoryImpl implements PaymentRepository {
   }
   async findByInstructorId(instructorId: string): Promise<PaymentEntity[]> {
     const query = `
-      SELECT
-        id,
-        user_id,
-        instructor_id,
-        course_id,
-        amount,
-        admin_amount,
-        instructor_amount,
-        currency,
-        status,
-        created_at,
-        updated_at
-      FROM payments
-      WHERE instructor_id = $1
-      ORDER BY created_at DESC
-    `;
+    SELECT
+      id,
+      user_id,
+      instructor_id,
+      course_id,
+      amount_in_inr,
+      amount_in_usd,
+      admin_amount,
+      instructor_amount,
+      currency,
+      status,
+      created_at,
+      updated_at,
+      admin_account_id,
+      instructor_account_id,
+      admin_payout_status,
+      instructor_payout_status
+    FROM payments
+    WHERE instructor_id = $1
+    ORDER BY created_at DESC
+  `;
     const values = [instructorId];
 
     try {
       const result = await this.pool.query(query, values);
-      
+
       return result.rows.map(row => new PaymentEntity(
-        row.id,
+        row.session_id,
         row.user_id,
         row.instructor_id,
         row.course_id,
-        row.amount,
+        row.amount_in_inr,
+        row.amount_in_usd,
         row.admin_amount,
         row.instructor_amount,
         row.currency,
         row.status,
         row.created_at,
-        row.updated_at, 
+        row.updated_at,
+        row.admin_account_id,
+        row.instructor_account_id,
+        row.admin_payout_status,
+        row.instructor_payout_status
       ));
     } catch (error) {
       console.error('Error retrieving transactions:', error);
       throw new Error('Failed to retrieve transactions');
     }
   }
+
 
 }

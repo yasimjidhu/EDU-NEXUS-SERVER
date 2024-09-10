@@ -4,6 +4,8 @@
     user_id VARCHAR(255) NOT NULL,
     instructor_id VARCHAR(255) NOT NULL,
     course_id VARCHAR(255) NOT NULL,
+    amount_in_inr INTEGER NOT NULL, -- Total amount in INR (cents)
+    amount_in_usd INTEGER NOT NULL, -- Total amount in USD (cents)
     amount INTEGER NOT NULL,
     admin_amount INTEGER NOT NULL,
     instructor_amount INTEGER NOT NULL,

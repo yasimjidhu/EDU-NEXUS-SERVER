@@ -23,10 +23,10 @@ const paymentController = new PaymentController(paymentUseCase);
 export const router = Router();
 
 
-router.post('/create-checkout-session',authMiddleware,studentMiddleware, paymentController.createCheckoutSession.bind(paymentController));
+router.post('/create-checkout-session',authMiddleware, paymentController.createCheckoutSession.bind(paymentController));
 router.post('/create-account-link', paymentController.createConnectedAccount.bind(paymentController));
 router.get('/complete-onboarding/:accountId', paymentController.handleOnboardingCompletion.bind(paymentController));
-router.post('/complete-purchase',authMiddleware,studentMiddleware,paymentController.completePurchase.bind(paymentController))
+router.post('/complete-purchase',authMiddleware,paymentController.completePurchase.bind(paymentController))
 router.get('/find-transactions',authMiddleware,adminMiddleware, paymentController.findTransactions.bind(paymentController));
 router.get('/find-transactions/:instructorId',authMiddleware, paymentController.findInstructorCoursesTransaction.bind(paymentController));
 

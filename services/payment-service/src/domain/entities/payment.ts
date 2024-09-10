@@ -6,15 +6,16 @@ export class PaymentEntity {
   userId: string;
   instructorId?: string;
   courseId: string;
-  amount: number;
-  adminAmount: number;
-  instructorAmount: number;
+  amountInINR?: number; // Amount in INR
+  amountInUSD?: number; // Amount in USD
+  adminAmount?: number;
+  instructorAmount?: number;
   currency: string;
   status: 'pending' | 'completed' | 'failed';
   createdAt: Date;
   updatedAt: Date;
-  adminAccountId?: string;
-  instructorAccountId?: string;
+  adminAccountId?: string; // Stripe account ID for the admin (where admin amount goes)
+  instructorAccountId?: string; // Stripe account ID for the instructor (where instructor amount goes)
   adminPayoutStatus?: 'pending' | 'completed' | 'failed'; 
   instructorPayoutStatus?: 'pending' | 'completed' | 'failed';
 
@@ -23,7 +24,8 @@ export class PaymentEntity {
     userId: string,
     instructorId: string,
     courseId: string,
-    amount: number,
+    amountInINR: number,
+    amountInUSD: number,
     adminAmount: number,
     instructorAmount: number,
     currency: string,
@@ -34,14 +36,15 @@ export class PaymentEntity {
     instructorAccountId?: string, // Make optional
     adminPayoutStatus?: 'pending' | 'completed' | 'failed',
     instructorPayoutStatus?: 'pending' | 'completed' | 'failed',
-    id: string = uuidv4()
+    id: string = uuidv4() // Generate UUID if not provided
   ) {
     this.id = id;
     this.sessionId = sessionId;
     this.userId = userId;
     this.instructorId = instructorId;
     this.courseId = courseId;
-    this.amount = amount;
+    this.amountInINR = amountInINR;
+    this.amountInUSD = amountInUSD;
     this.adminAmount = adminAmount;
     this.instructorAmount = instructorAmount;
     this.currency = currency;

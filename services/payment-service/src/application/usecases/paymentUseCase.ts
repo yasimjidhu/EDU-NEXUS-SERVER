@@ -4,6 +4,7 @@ import { KafkaProducer } from '../../infrastructure/messaging/kafka/producer';
 import { PaymentEntity } from '../../domain/entities/payment';
 import Stripe from 'stripe';
 import { StripeService } from '../../infrastructure/services/stripeService';
+import axios from 'axios';
 
 export class PaymentUseCase {
   private paymentRepository: PaymentRepository;
@@ -24,7 +25,7 @@ export class PaymentUseCase {
   }
 
   async createCheckoutSession(course: TCourse): Promise<Stripe.Checkout.Session> {
-    console.log('course in payment',course)
+    console.log('course in payment', course)
     try {
       const { currency, course_name, amount, user_id, course_id, instructor_id, email, adminAccountId, instructorAccountId } = course;
 
@@ -71,24 +72,48 @@ export class PaymentUseCase {
   async create(sessionId: string): Promise<void> {
     try {
       const session = await this.stripe.checkout.sessions.retrieve(sessionId);
-
+      console.log('User balance is', await this.stripe.balance.retrieve());
+  
       if (session.payment_status !== 'paid') {
         throw new Error('Payment not completed');
       }
-
-      const adminAmount = Math.round(session.amount_total! * 0.3);
-      const instructorAmount = Math.round(session.amount_total! * 0.7);
-
+  
+      console.log('Total course amount (INR cents):', session.amount_total);
+  
+      // Fetch conversion rate (INR to USD)
+      const conversionRate = await this.fetchConversionRate('INR', 'USD');
+      const amountInINR = session.amount_total! / 100; // Convert amount from cents to INR
+      console.log('Conversion rate is', conversionRate);
+  
+      // Convert INR to USD
+      const amountInUSD = amountInINR * conversionRate;
+      console.log('Converted amount in USD:', amountInUSD);
+  
+      // Convert USD amount to cents for Stripe
+      const amountInUSDCents = Math.round(amountInUSD * 100);
+  
+      // Calculate admin and instructor amounts in USD
+      const adminAmountUSD = amountInUSD * 0.3;
+      const instructorAmountUSD = amountInUSD * 0.7;
+  
+      // Convert USD amounts to cents
+      const adminAmount = Math.round(adminAmountUSD * 100); // Amount in cents
+      const instructorAmount = Math.round(instructorAmountUSD * 100); // Amount in cents
+  
+      console.log('Admin amount (USD cents):', adminAmount);
+      console.log('Instructor amount (USD cents):', instructorAmount);
+  
       // Save payment record in the database
       const payment = new PaymentEntity(
         session.id,
         session.client_reference_id!,
         session.metadata?.instructorId!,
         session.metadata?.courseId!,
-        session.amount_total!,
+        amountInINR,
+        amountInUSDCents, 
         adminAmount,
         instructorAmount,
-        session.currency!,
+        'usd',
         'completed',
         new Date(),
         new Date(),
@@ -97,31 +122,31 @@ export class PaymentUseCase {
         'pending',
         'pending'
       );
-
+      console.log('payment going to save',payment)
       const savedPayment = await this.paymentRepository.create(payment);
-      console.log('Payment saved in DB:', savedPayment);
-
+      console.log('Payment saved in DB');
+      
       // Create transfers
       await this.stripe.transfers.create({
         amount: instructorAmount,
-        currency: session.currency!,
+        currency: 'usd',
         destination: session.metadata?.instructorAccountId!,
         transfer_group: session.id,
       });
-
-      // Update instructor transfer status to 'completed'
+      console.log('Instructor amount transferred:', instructorAmount);
+  
       await this.updatePaymentStatus(session.id, 'instructor', 'completed');
-
+  
       await this.stripe.transfers.create({
         amount: adminAmount,
-        currency: session.currency!,
-        destination: session.metadata?.adminAccountId!, // Use actual admin account ID from metadata
+        currency: 'usd',
+        destination: session.metadata?.adminAccountId!,
         transfer_group: session.id,
       });
-
-      // Update admin transfer status to 'completed'
+      console.log('Admin amount transferred:', adminAmount);
+  
       await this.updatePaymentStatus(session.id, 'admin', 'completed');
-
+  
       // Publish enrollment event to content service
       await this.publishEnrollmentEvent(session);
       console.log('Payment info sent to the content service');
@@ -131,6 +156,25 @@ export class PaymentUseCase {
       throw new Error('Failed to process payment');
     }
   }
+  
+  
+
+  async fetchConversionRate(fromCurrency: string, toCurrency: string): Promise<number> {
+    const api = process.env.EXCHANGE_RATE_API;
+    console.log('from currecncy is ', fromCurrency)
+    console.log('to currecncy is ', toCurrency)
+    try {
+      // Fetch conversion rates from the API using axios
+      const response = await axios.get(`https://v6.exchangerate-api.com/v6/df9d59df3e26aea3869c4905/latest/${fromCurrency}`)
+      console.log('rsponse ', response.data.conversion_rates)
+      console.log('Fetched conversion rate data:', response.data.conversion_rates[toCurrency]);
+      return response.data.conversion_rates[toCurrency];
+    } catch (error) {
+      console.error('Error fetching conversion rate:', error);
+      throw new Error('Failed to fetch conversion rate');
+    }
+  }
+
 
   // Method to update the payment status in the database
   async updatePaymentStatus(sessionId: string, type: 'admin' | 'instructor', status: 'completed' | 'failed'): Promise<void> {
@@ -287,9 +331,8 @@ export class PaymentUseCase {
   }
   async getTransactions(filter: { [key: string]: any } = {}): Promise<PaymentEntity[]> {
     try {
-      // Here we assume filter is already in the correct format
+
       const transactions = await this.paymentRepository.findTransactions(filter);
-      console.log('transactions in usecase', transactions)
       return transactions;
     } catch (error) {
       console.error('Error retrieving transactions:', error);
