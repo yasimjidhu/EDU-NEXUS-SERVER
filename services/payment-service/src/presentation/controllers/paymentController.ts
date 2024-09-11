@@ -32,9 +32,9 @@ export class PaymentController {
   async handleOnboardingCompletion(req: Request, res: Response): Promise<void> {
     const { accountId } = req.params
     try {
-      console.log('account id in backend',accountId)
+      console.log('account id in backend', accountId)
       const response = await this.paymentUseCase.handleOnboardingCompletion(accountId)
-      console.log('response of handle on boarding completeion',response)
+      console.log('response of handle on boarding completeion', response)
       res.status(200).json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -64,14 +64,46 @@ export class PaymentController {
   }
   async findInstructorCoursesTransaction(req: Request, res: Response): Promise<void> {
     const { instructorId } = req.params;
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const offset = (page - 1) * limit;
 
     try {
-      console.log('instructor id got>>>', instructorId)
-      // Convert query parameters to the correct format if necessary
-      const transactions = await this.paymentUseCase.getInstructorCoursesTransaction(instructorId);
-      res.status(200).json(transactions);
+      const transactions = await this.paymentUseCase.getInstructorCoursesTransaction(instructorId, limit, offset);
+
+      const totalTransactions = await this.paymentUseCase.getTotalTransactionsForInstructor(instructorId);
+
+      res.status(200).json({
+        transactions,
+        currentPage: page,
+        totalPages: Math.ceil(totalTransactions / limit),
+        totalTransactions
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
+  async getTodayRevenue(req: Request, res: Response): Promise<void> {
+    try {
+      const instructorId = req.params.instructorId as string
+      const revenue = await this.paymentUseCase.getInstructorTodayRevenue(instructorId);
+      res.status(200).json({ revenue });
+    } catch (error) {
+      console.error('Error fetching today\'s revenue:', error);
+      res.status(500).json({ error: 'Failed to fetch today\'s revenue' });
+    }
+  }
+  // Method to get total earnings
+  async getTotalEarnings(req: Request, res: Response): Promise<void> {
+    try {
+      const instructorId = req.params.instructorId as string
+      const totalEarnings = await this.paymentUseCase.getInstructorTotalEarnings(instructorId);
+      console.log('total earnings',totalEarnings)
+      res.status(200).json({ totalEarnings });
+    } catch (error) {
+      console.error('Error fetching total earnings:', error);
+      res.status(500).json({ error: 'Failed to fetch total earnings' });
+    }
+  }
+
 }

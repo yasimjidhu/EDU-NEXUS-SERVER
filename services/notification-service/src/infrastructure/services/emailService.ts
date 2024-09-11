@@ -144,4 +144,51 @@ export class EmailService implements EmailRepository {
 
         await this.transporter.sendMail(mailOptions);
     }
+
+     async  sendVerificationNotification(email: string, currently_due: string[]): Promise<void> {
+        const mailOptions = {
+          from: `"Edu-Nexus The E-learning Platform" <${process.env.EMAIL_USER}>`,
+          to: email,
+          subject: 'Action Required: Complete Your Stripe Verification',
+          text: `
+            Dear User,
+      
+            We are reaching out to inform you that there are pending verification requirements related to your Stripe account for the course payment process.
+      
+            Here is the list of requirements that need your attention:
+            ${currently_due.join('\n')}
+      
+            Please complete these requirements to ensure that your account is fully verified and you can continue to receive payments without interruptions.
+      
+            If you have any questions or need assistance, please contact our support team at support@edu-nexus.com.
+      
+            Best regards,
+            The Edu-Nexus Team
+          `,
+          html: `
+            <div style="font-family: Arial, sans-serif; color: #333;">
+              <div style="background-color: #f7f7f7; padding: 20px; border-radius: 10px;">
+                <h1 style="color: #4CAF50;">Action Required: Complete Your Stripe Verification</h1>
+                <p>Dear User,</p>
+                <p>We are reaching out to inform you that there are pending verification requirements related to your Stripe account for the course payment process.</p>
+                <p>Here is the list of requirements that need your attention:</p>
+                <ul>
+                  ${currently_due.map(req => `<li>${req}</li>`).join('')}
+                </ul>
+                <p>Please complete these requirements to ensure that your account is fully verified and you can continue to receive payments without interruptions.</p>
+                <p>If you have any questions or need assistance, please contact our support team at <a href="mailto:support@edu-nexus.com">support@edu-nexus.com</a>.</p>
+                <p>Best regards,</p>
+                <p><strong>The Edu-Nexus Team</strong></p>
+              </div>
+            </div>
+          `,
+        };
+      
+        try {
+          await this.transporter.sendMail(mailOptions);
+          console.log('Verification email sent successfully.');
+        } catch (error) {
+          console.error('Error sending verification email:', error);
+        }
+      }
 }

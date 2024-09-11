@@ -14,7 +14,7 @@ const initializeDatabase = async () => {
         admin_amount INTEGER NOT NULL,
         instructor_amount INTEGER NOT NULL,
         currency VARCHAR(3) NOT NULL,
-        status VARCHAR(20) NOT NULL,
+        status VARCHAR(20) NOT NULL,  
         admin_account_id VARCHAR(255) NOT NULL,
         instructor_account_id VARCHAR(255) NOT NULL,
         admin_payout_status VARCHAR(20) NOT NULL,

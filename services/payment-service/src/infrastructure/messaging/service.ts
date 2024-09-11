@@ -66,3 +66,17 @@ export async function notifyUserService(accountId: string, chargesEnabled: boole
     console.error('Error in notifyUserService:', error);
   }
 }
+
+// Function to send verification notifications
+export async function sendVerificationNotification(email: string, currently_due: any[]): Promise<void> {
+  const payload = {
+    email,
+    currently_due,
+  };
+
+  try {
+    await kafkaProducer.produce('verification-notifications', payload);
+  } catch (error) {
+    console.error('Error in sendVerificationNotification:', error);
+  }
+}

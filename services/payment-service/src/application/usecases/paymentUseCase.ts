@@ -73,36 +73,36 @@ export class PaymentUseCase {
     try {
       const session = await this.stripe.checkout.sessions.retrieve(sessionId);
       console.log('User balance is', await this.stripe.balance.retrieve());
-  
+
       if (session.payment_status !== 'paid') {
         throw new Error('Payment not completed');
       }
-  
+
       console.log('Total course amount (INR cents):', session.amount_total);
-  
+
       // Fetch conversion rate (INR to USD)
       const conversionRate = await this.fetchConversionRate('INR', 'USD');
       const amountInINR = session.amount_total! / 100; // Convert amount from cents to INR
       console.log('Conversion rate is', conversionRate);
-  
+
       // Convert INR to USD
       const amountInUSD = amountInINR * conversionRate;
       console.log('Converted amount in USD:', amountInUSD);
-  
+
       // Convert USD amount to cents for Stripe
       const amountInUSDCents = Math.round(amountInUSD * 100);
-  
+
       // Calculate admin and instructor amounts in USD
       const adminAmountUSD = amountInUSD * 0.3;
       const instructorAmountUSD = amountInUSD * 0.7;
-  
+
       // Convert USD amounts to cents
       const adminAmount = Math.round(adminAmountUSD * 100); // Amount in cents
       const instructorAmount = Math.round(instructorAmountUSD * 100); // Amount in cents
-  
+
       console.log('Admin amount (USD cents):', adminAmount);
       console.log('Instructor amount (USD cents):', instructorAmount);
-  
+
       // Save payment record in the database
       const payment = new PaymentEntity(
         session.id,
@@ -110,7 +110,7 @@ export class PaymentUseCase {
         session.metadata?.instructorId!,
         session.metadata?.courseId!,
         amountInINR,
-        amountInUSDCents, 
+        amountInUSDCents,
         adminAmount,
         instructorAmount,
         'usd',
@@ -122,10 +122,10 @@ export class PaymentUseCase {
         'pending',
         'pending'
       );
-      console.log('payment going to save',payment)
+      console.log('payment going to save', payment)
       const savedPayment = await this.paymentRepository.create(payment);
       console.log('Payment saved in DB');
-      
+
       // Create transfers
       await this.stripe.transfers.create({
         amount: instructorAmount,
@@ -134,9 +134,9 @@ export class PaymentUseCase {
         transfer_group: session.id,
       });
       console.log('Instructor amount transferred:', instructorAmount);
-  
+
       await this.updatePaymentStatus(session.id, 'instructor', 'completed');
-  
+
       await this.stripe.transfers.create({
         amount: adminAmount,
         currency: 'usd',
@@ -144,9 +144,9 @@ export class PaymentUseCase {
         transfer_group: session.id,
       });
       console.log('Admin amount transferred:', adminAmount);
-  
+
       await this.updatePaymentStatus(session.id, 'admin', 'completed');
-  
+
       // Publish enrollment event to content service
       await this.publishEnrollmentEvent(session);
       console.log('Payment info sent to the content service');
@@ -156,8 +156,8 @@ export class PaymentUseCase {
       throw new Error('Failed to process payment');
     }
   }
-  
-  
+
+
 
   async fetchConversionRate(fromCurrency: string, toCurrency: string): Promise<number> {
     const api = process.env.EXCHANGE_RATE_API;
@@ -339,7 +339,16 @@ export class PaymentUseCase {
       throw new Error('Failed to retrieve transactions');
     }
   }
-  async getInstructorCoursesTransaction(instructorId: string): Promise<PaymentEntity[]> {
-    return await this.paymentRepository.findByInstructorId(instructorId)
+  async getInstructorCoursesTransaction(instructorId: string, limit: number, offset: number): Promise<PaymentEntity[]> {
+    return await this.paymentRepository.findByInstructorId(instructorId, limit, offset)
+  }
+  async getTotalTransactionsForInstructor(instructorId: string): Promise<number> {
+    return await this.paymentRepository.getTotalTransactionsForInstructor(instructorId)
+  }
+  async getInstructorTodayRevenue(instructorId: string): Promise<number> {
+    return await this.paymentRepository.getTodayRevenueForInstructor(instructorId);
+  }
+  async getInstructorTotalEarnings(instructorId: string): Promise<number> {
+    return await this.paymentRepository.getTotalEarningsForInstructor(instructorId);
   }
 }

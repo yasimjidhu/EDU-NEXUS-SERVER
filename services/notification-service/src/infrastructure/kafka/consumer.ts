@@ -1,62 +1,64 @@
 import { Kafka, KafkaMessage, Consumer } from 'kafkajs';
 import { EmailService } from '../services/emailService';
-import { kafka } from './kafka';
+
+const kafka = new Kafka({
+  clientId: 'notification-service-client',
+  brokers: ['localhost:9092'],
+});
 
 const emailService = new EmailService();
 
-let courseConsumer: Consumer | null = null;
-let instructorConsumer: Consumer | null = null;
-let paymentConsumer:Consumer | null = null;
+const consumer = kafka.consumer({ groupId: 'notification-group' });
 
-let courseConsumerStarted = false;
-let instructorConsumerStarted = false;
-let paymentConsumerStarted = false
+const runConsumer = async () => {
+  try {
+    await consumer.connect();
+    console.log('Consumer connected');
 
-const createConsumer = (
-  groupId: string,
-  topics: string[],
-  messageHandler: (message: KafkaMessage) => Promise<void>
-) => {
-  const consumer = kafka.consumer({ groupId });
+    // Subscribe to multiple topics
+    await consumer.subscribe({ topic: 'course-approval', fromBeginning: true });
+    await consumer.subscribe({ topic: 'instructor-approval', fromBeginning: true });
+    await consumer.subscribe({ topic: 'payment-events', fromBeginning: true });
+    await consumer.subscribe({ topic: 'verification-notifications', fromBeginning: true });
+    console.log('Consumer subscribed to topics');
 
-  const runConsumer = async () => {
-    try {
-      await consumer.connect();
-      console.log(`Consumer connected for group ${groupId}`);
-
-      for (const topic of topics) {
-        await consumer.subscribe({ topic, fromBeginning: true });
-        console.log(`Consumer subscribed to topic ${topic}`);
-      }
-
-      await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-          try {
-            await messageHandler(message);
-            await consumer.commitOffsets([
-              { topic, partition, offset: (parseInt(message.offset) + 1).toString() },
-            ]);
-          } catch (error) {
-            console.error('Error processing message', error);
+    await consumer.run({
+      eachMessage: async ({ topic, partition, message }) => {
+        try {
+          switch (topic) {
+            case 'course-approval':
+              await handleCourseApprovalMessage(message);
+              break;
+            case 'instructor-approval':
+              await handleInstructorApprovalMessage(message);
+              break;
+            case 'payment-events':
+              await handlePaymentNotificationMessage(message);
+              break;
+            case 'verification-notifications':
+              await handleVerificationNotificationMessage(message);
+              break;
+            default:
+              console.warn('Unknown topic received', topic);
           }
-        },
-      });
+          await consumer.commitOffsets([
+            { topic, partition, offset: (parseInt(message.offset) + 1).toString() },
+          ]);
+        } catch (error) {
+          console.error('Error processing message', error);
+        }
+      },
+    });
 
-      console.log(`Consumer running for group ${groupId}`);
-      if (groupId === 'course-group') courseConsumerStarted = true;
-      if (groupId === 'instructor-group') instructorConsumerStarted = true;
-      if (groupId === 'payment-group') paymentConsumerStarted = true;
-    } catch (error) {
-      console.error(`Error in consumer setup for group ${groupId}`, error);
-    }
-  };
-
-  return { runConsumer, consumer };
+    console.log('Consumer running');
+  } catch (error) {
+    console.error('Error in consumer setup', error);
+  }
 };
 
-const courseApprovalMessageHandler = async (message: KafkaMessage) => {
+const handleCourseApprovalMessage = async (message: KafkaMessage) => {
   const { email, action, courseName } = JSON.parse(message.value?.toString() ?? '{}');
-  console.log('Received message', { email, action, courseName });
+  console.log('Received course approval message', { email, action, courseName });
 
   if (action === 'approve') {
     await emailService.sendCourseApprovalEmail(email, courseName);
@@ -69,9 +71,9 @@ const courseApprovalMessageHandler = async (message: KafkaMessage) => {
   }
 };
 
-const instructorApprovalMessageHandler = async (message: KafkaMessage) => {
+const handleInstructorApprovalMessage = async (message: KafkaMessage) => {
   const { email, action } = JSON.parse(message.value?.toString() ?? '{}');
-  console.log('Received message', { email, action });
+  console.log('Received instructor approval message', { email, action });
 
   if (action === 'approve') {
     await emailService.sendApprovalEmail(email);
@@ -84,7 +86,7 @@ const instructorApprovalMessageHandler = async (message: KafkaMessage) => {
   }
 };
 
-const paymentNotificationHandler = async (message: KafkaMessage) => {
+const handlePaymentNotificationMessage = async (message: KafkaMessage) => {
   const { type, payload } = JSON.parse(message.value?.toString() ?? '{}');
   console.log('Received payment notification', { type, payload });
 
@@ -102,44 +104,23 @@ const paymentNotificationHandler = async (message: KafkaMessage) => {
   }
 };
 
-const courseConsumerObj = createConsumer('course-group', ['course-approval'], courseApprovalMessageHandler);
-const instructorConsumerObj = createConsumer('instructor-group', ['instructor-approval'], instructorApprovalMessageHandler);
-const paymentConsumerObj = createConsumer('payment-group',['payment-events'],paymentNotificationHandler)
+const handleVerificationNotificationMessage = async (message: KafkaMessage) => {
+  const { email, currently_due } = JSON.parse(message.value?.toString() ?? '{}');
+  console.log('Received verification notification message', { email, currently_due });
 
-courseConsumer = courseConsumerObj.consumer;
-instructorConsumer = instructorConsumerObj.consumer;
-paymentConsumer = paymentConsumerObj.consumer;
+  await emailService.sendVerificationNotification(email, currently_due);
+  console.log('Verification email sent', email);
+};
 
 const shutdown = async () => {
-  console.log('Shutting down consumers...');
-  if (courseConsumer) {
-    try {
-      console.log('Disconnecting course consumer...');
-      await courseConsumer.disconnect();
-      console.log('Course consumer disconnected');
-    } catch (error) {
-      console.error('Error during course consumer shutdown', error);
-    }
+  console.log('Shutting down consumer...');
+  try {
+    await consumer.disconnect();
+    console.log('Consumer disconnected');
+  } catch (error) {
+    console.error('Error during consumer shutdown', error);
   }
-  if (instructorConsumer) {
-    try {
-      console.log('Disconnecting instructor consumer...');
-      await instructorConsumer.disconnect();
-      console.log('Instructor consumer disconnected');
-    } catch (error) {
-      console.error('Error during instructor consumer shutdown', error);
-    }
-  }
-  if(paymentConsumer){
-    try {
-      console.log('Disconncecting payment consumer....')
-      await paymentConsumer.disconnect()
-      console.log('payment consumer disconnected')
-    } catch (error) {
-      console.error('error during payment consumer shutdown',error)
-    }
-  }
-  console.log('All consumers disconnected. Exiting process.');
+  console.log('Consumer disconnected. Exiting process.');
   process.exit();
 };
 
@@ -147,26 +128,10 @@ const shutdown = async () => {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
-export const startConsumers = async () => {
-  await courseConsumerObj.runConsumer();
-  await instructorConsumerObj.runConsumer();
-  await paymentConsumerObj.runConsumer();
-
-  if (courseConsumerStarted) {
-    console.log('Course consumer started successfully');
-  } else {
-    console.log('Course consumer failed to start');
-  }
-  
-  if (instructorConsumerStarted) {
-    console.log('Instructor consumer started successfully');
-  } else {
-    console.log('Instructor consumer failed to start');
-  }
-
-  if (paymentConsumerStarted) {
-    console.log('payment consumer started successfully');
-  } else {
-    console.log('payment consumer failed to start');
-  }
+export const startConsumer = async () => {
+  await runConsumer();
 };
+
+startConsumer().catch((error) => {
+  console.error('Error starting consumer', error);
+});

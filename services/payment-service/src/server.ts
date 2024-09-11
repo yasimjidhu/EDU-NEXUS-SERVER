@@ -2,10 +2,10 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import { router } from './presentation/routes/paymentRoute';
 import { StartPaymentDb } from './infrastructure/database/paymentDb';
 import initializeDatabase from './infrastructure/database/createTable';
-import { createTestCharge } from './infrastructure/services/test';
+import initializePayoutDatabase from './infrastructure/database/createPayoutTable';
+import router from './presentation/routes';
 
 dotenv.config();
 
@@ -15,9 +15,10 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/payment', router)
+app.use('/', router)
 
-createTestCharge()
+initializeDatabase()
+initializePayoutDatabase()
 StartPaymentDb()
 initializeDatabase()
 app.listen(3005, () => {

@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import { PaymentRepository } from '../../domain/repositories/PaymentRepository';
 import { PaymentEntity } from '../../domain/entities/payment';
+import { startOfDay, endOfDay } from 'date-fns';
 
 export class PaymentRepositoryImpl implements PaymentRepository {
   private pool: Pool;
@@ -173,30 +174,32 @@ export class PaymentRepositoryImpl implements PaymentRepository {
       throw new Error('Failed to retrieve transactions');
     }
   }
-  async findByInstructorId(instructorId: string): Promise<PaymentEntity[]> {
+  async findByInstructorId(instructorId: string, limit: number, offset: number): Promise<PaymentEntity[]> {
     const query = `
-    SELECT
-      id,
-      user_id,
-      instructor_id,
-      course_id,
-      amount_in_inr,
-      amount_in_usd,
-      admin_amount,
-      instructor_amount,
-      currency,
-      status,
-      created_at,
-      updated_at,
-      admin_account_id,
-      instructor_account_id,
-      admin_payout_status,
-      instructor_payout_status
-    FROM payments
-    WHERE instructor_id = $1
-    ORDER BY created_at DESC
-  `;
-    const values = [instructorId];
+      SELECT
+        id,
+        user_id,
+        instructor_id,
+        course_id,
+        amount_in_inr,
+        amount_in_usd,
+        admin_amount,
+        instructor_amount,
+        currency,
+        status,
+        created_at,
+        updated_at,
+        admin_account_id,
+        instructor_account_id,
+        admin_payout_status,
+        instructor_payout_status
+      FROM payments
+      WHERE instructor_id = $1
+      ORDER BY created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
+
+    const values = [instructorId, limit, offset];  // Pass limit and offset to the query
 
     try {
       const result = await this.pool.query(query, values);
@@ -223,6 +226,51 @@ export class PaymentRepositoryImpl implements PaymentRepository {
       console.error('Error retrieving transactions:', error);
       throw new Error('Failed to retrieve transactions');
     }
+  }
+  async getTotalTransactionsForInstructor(instructorId: string): Promise<number> {
+    const query = `
+      SELECT COUNT(*) as total
+      FROM payments
+      WHERE instructor_id = $1
+    `;
+
+    const values = [instructorId];
+
+    try {
+      const result = await this.pool.query(query, values);
+
+      // The count is returned as a string, so you need to parse it as a number
+      return parseInt(result.rows[0].total, 10);
+    } catch (error) {
+      console.error('Error retrieving total transactions:', error);
+      throw new Error('Failed to retrieve total transactions');
+    }
+  }
+  async getTodayRevenueForInstructor(instructorId: string): Promise<number> {
+    const todayStart = startOfDay(new Date());
+    const todayEnd = endOfDay(new Date());
+
+    const query = `
+        SELECT COALESCE(SUM(instructor_amount), 0) AS today_revenue
+        FROM payments
+        WHERE instructor_id = $1
+        AND created_at BETWEEN $2 AND $3;
+    `;
+
+    const result = await this.pool.query(query, [instructorId, todayStart, todayEnd]);
+
+    return result.rows[0].today_revenue;
+  }
+  // Method to get the total earnings of an instructor
+  async getTotalEarningsForInstructor(instructorId: string): Promise<number> {
+    const query = `
+        SELECT COALESCE(SUM(instructor_amount), 0) AS total_earnings
+        FROM payments
+        WHERE instructor_id = $1;
+    `;
+
+    const result = await this.pool.query(query, [instructorId]);
+    return result.rows[0].total_earnings;
   }
 
 
