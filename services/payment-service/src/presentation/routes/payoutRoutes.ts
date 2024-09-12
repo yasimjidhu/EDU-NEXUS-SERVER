@@ -1,3 +1,5 @@
+// Payment Service Router (routes.ts)
+
 import { Router } from 'express';
 import Stripe from 'stripe';
 import pool from '../../infrastructure/database/paymentDb';
@@ -7,21 +9,27 @@ import { PayoutRepositoryImpl } from '../../infrastructure/repositories/payoutRe
 import { PayoutUseCase } from '../../application/usecases/payoutUseCase';
 import { PayoutController } from '../controllers/payoutController';
 import { StripeWebhookUseCase } from '../../application/usecases/WebHookUseCase';
+import bodyParser from 'body-parser';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
 
 const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
 const payoutRepository = new PayoutRepositoryImpl(pool);
-const payoutUseCase = new PayoutUseCase(payoutRepository, stripe,);
-const webHookUseCase = new StripeWebhookUseCase(payoutRepository)
-const payoutController = new PayoutController(payoutUseCase,webHookUseCase,stripe);
+const payoutUseCase = new PayoutUseCase(payoutRepository, stripe);
+const webHookUseCase = new StripeWebhookUseCase(payoutRepository);
+const payoutController = new PayoutController(payoutUseCase, webHookUseCase, stripe);
 
 const router = Router();
 
-// payout endpoints
-router.post('/webhook',payoutController.handleStripeWebhook.bind(payoutController)) 
-router.post('/instructor', authMiddleware, instructorMiddleware, payoutController.requestInstructorPayout.bind(payoutController))
-router.post('/admin', authMiddleware, adminMiddleware, payoutController.requestAdminPayout.bind(payoutController))
-router.get('/available-payouts/:instructorId', authMiddleware, instructorMiddleware, payoutController.getInstructorAvailablePayouts.bind(payoutController))
+// Payout routes
+router.post('/admin', authMiddleware, adminMiddleware, payoutController.requestAdminPayout.bind(payoutController));
+router.post('/instructor', authMiddleware, instructorMiddleware, payoutController.requestInstructorPayout.bind(payoutController));
 
-export default router
+// Webhook route, using raw body parser
+router.post('/webhook', bodyParser.raw({ type: 'application/json' }), payoutController.handleStripeWebhook.bind(payoutController));
+
+// payout routes
+router.get('/available-payouts', authMiddleware, adminMiddleware, payoutController.getAvailablePayoutsForAdmin.bind(payoutController));
+router.get('/available-payouts/:instructorId', authMiddleware, instructorMiddleware, payoutController.getInstructorAvailablePayouts.bind(payoutController));
+
+export default router;

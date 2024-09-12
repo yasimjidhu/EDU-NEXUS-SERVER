@@ -14,7 +14,7 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
 // messaging
 const producer = new KafkaProducer()
 
-const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
+export const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
 const stripeService = new StripeService(stripe)
 const paymentRepository = new PaymentRepositoryImpl(pool);
 const paymentUseCase = new PaymentUseCase(paymentRepository, stripe,producer,stripeService);
@@ -29,7 +29,9 @@ router.get('/complete-onboarding/:accountId',authMiddleware, paymentController.h
 router.post('/complete-purchase',authMiddleware,studentMiddleware,paymentController.completePurchase.bind(paymentController))
 router.get('/find-transactions',authMiddleware,adminMiddleware, paymentController.findTransactions.bind(paymentController));
 router.get('/find-transactions/:instructorId',authMiddleware, paymentController.findInstructorCoursesTransaction.bind(paymentController));
+router.get('/todays-revenue',authMiddleware,adminMiddleware, paymentController.getTodaysAdminRevenue.bind(paymentController));
 router.get('/todays-revenue/:instructorId',authMiddleware,instructorMiddleware, paymentController.getTodayRevenue.bind(paymentController));
+router.get('/total-earnings',authMiddleware,adminMiddleware, paymentController.getTotalEarningsOfAdmin.bind(paymentController));
 router.get('/total-earnings/:instructorId',authMiddleware,instructorMiddleware, paymentController.getTotalEarnings.bind(paymentController));
 
 export default router

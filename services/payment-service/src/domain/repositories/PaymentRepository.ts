@@ -9,5 +9,7 @@ export interface PaymentRepository {
     findTransactions(filter: any): Promise<PaymentEntity[]>;
     updateTransferStatus(id: string,type: 'admin' | 'instructor',status: 'pending' | 'completed' | 'failed'): Promise<void> 
     getTodayRevenueForInstructor(instructorId:string):Promise<number>
+    getTodayRevenueForAdmin():Promise<number>
     getTotalEarningsForInstructor(instructorId:string):Promise<number>
+    getTotalEarningsForAdmin():Promise<number>
   }

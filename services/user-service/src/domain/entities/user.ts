@@ -18,7 +18,9 @@ export class UserEntity {
       social: string;
     },
     public qualification?:string,
-    public cv?: string, // Making cv optional
+    public cv?: string, 
+    public verificationSessionId?: string,
+    public verificationStatus?: string,
     public stripeAccountId?: string,
     public chargesEnabled?: boolean,
     public onboardingComplete?: boolean,
@@ -35,4 +37,5 @@ export class UserEntity {
   public isVerified: boolean;
   public isGAuth: boolean;
   public isRejected: boolean;
+  public _id?:string
 }

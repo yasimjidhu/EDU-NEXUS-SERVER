@@ -82,6 +82,8 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
         },
+		verificationSessionId: { type: String },
+    	verificationStatus: { type: String },
 		isGAuth: {
 			type: Boolean,
 			default: false,

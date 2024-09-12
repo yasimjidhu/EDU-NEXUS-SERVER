@@ -3,11 +3,13 @@ import { RegisterUserUseCase } from "../../../application/use-case/RegisterUser"
 import { AuthorizeUserUseCase } from "../../../application/use-case/AuthorizeUser";
 import { ProfileUseCase } from "../../../application/use-case/ProfileUseCase";
 import { AuthService } from "../../../adapters/services/verfiyAccessToken";
+import { KycUseCase } from "../../../application/use-case/kycUseCase";
 export class UserController {
   constructor(
     private registerUserUseCase: RegisterUserUseCase,
     private authorizeUserUseCase: AuthorizeUserUseCase,
     private profileUseCase: ProfileUseCase,
+    private kycUseCase:KycUseCase,
     private authService: AuthService
   ) { }
 
@@ -123,6 +125,18 @@ export class UserController {
     try {
       const data = await this.profileUseCase.saveStripeAccountId(instructorId,stripeAccountId);
       res.status(200).json(data);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async initiateKyc(req: Request, res: Response): Promise<void> {
+    const instructorId = req.params.instructorId as string
+    console.log('this is the instructorid',instructorId)
+    try {
+      const  { verificationSessionId, verificationUrl } = await this.kycUseCase.execute(instructorId);
+      res.status(200).json({verificationSessionId,verificationUrl});
     } catch (error: any) {
       console.log(error);
       res.status(500).json({ message: error.message });

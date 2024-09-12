@@ -161,13 +161,10 @@ export class PaymentUseCase {
 
   async fetchConversionRate(fromCurrency: string, toCurrency: string): Promise<number> {
     const api = process.env.EXCHANGE_RATE_API;
-    console.log('from currecncy is ', fromCurrency)
-    console.log('to currecncy is ', toCurrency)
+
     try {
       // Fetch conversion rates from the API using axios
       const response = await axios.get(`https://v6.exchangerate-api.com/v6/df9d59df3e26aea3869c4905/latest/${fromCurrency}`)
-      console.log('rsponse ', response.data.conversion_rates)
-      console.log('Fetched conversion rate data:', response.data.conversion_rates[toCurrency]);
       return response.data.conversion_rates[toCurrency];
     } catch (error) {
       console.error('Error fetching conversion rate:', error);
@@ -348,7 +345,13 @@ export class PaymentUseCase {
   async getInstructorTodayRevenue(instructorId: string): Promise<number> {
     return await this.paymentRepository.getTodayRevenueForInstructor(instructorId);
   }
+  async getTodayRevenueForAdmin():Promise<number>{
+    return await this.paymentRepository.getTodayRevenueForAdmin()
+  }
   async getInstructorTotalEarnings(instructorId: string): Promise<number> {
     return await this.paymentRepository.getTotalEarningsForInstructor(instructorId);
+  }
+  async getAdminTotalEarnings(): Promise<number> {
+    return await this.paymentRepository.getTotalEarningsForAdmin();
   }
 }

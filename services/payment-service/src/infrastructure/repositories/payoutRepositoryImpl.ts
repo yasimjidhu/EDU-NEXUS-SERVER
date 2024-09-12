@@ -147,5 +147,24 @@ export class PayoutRepositoryImpl implements PayoutRepository {
       throw new Error('Failed to retrieve available payouts');
     }
   }
+  async getAvailablePayoutsForAdmin(): Promise<number> {
+    const query = `
+      SELECT 
+        SUM(admin_amount) AS available_payouts
+      FROM payments
+      WHERE admin_payout_status = 'pending';
+    `;
+  
+    try {
+      const result = await this.pool.query(query);
+      const availablePayouts = result.rows[0].available_payouts || 0; 
+      
+      return availablePayouts;
+    } catch (error) {
+      console.error('Error retrieving available payouts for admin:', error);
+      throw new Error('Failed to retrieve available payouts for admin');
+    }
+  }
+  
   
 }

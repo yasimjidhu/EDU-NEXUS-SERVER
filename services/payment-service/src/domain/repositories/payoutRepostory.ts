@@ -8,4 +8,5 @@ export interface PayoutRepository {
   getPayoutById(payoutId: number): Promise<PayoutEntity | null>
   getPayoutsByPaymentId(paymentId: string): Promise<PayoutEntity[]>
   getAvailablePayoutsForInstructor(instructorId: string): Promise<number>
+  getAvailablePayoutsForAdmin(): Promise<number>
 }

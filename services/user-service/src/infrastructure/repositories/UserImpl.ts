@@ -1,7 +1,7 @@
 import { UserRepository } from "./user";
 import { UserEntity } from "../../domain/entities/user";
 import { User } from "../database/models/User";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import { FeedbackEntity } from "../../domain/entities/feedback";
 import { Feedback } from "../database/models/feedbacks";
 
@@ -16,6 +16,27 @@ export class UserRepositoryImpl implements UserRepository {
     }
   }
 
+  async update(instructor: UserEntity): Promise<void> {
+    const existingInstructor = await User.findById(instructor._id);
+    if (existingInstructor) {
+      existingInstructor.isVerified = instructor.isVerified;
+      existingInstructor.verificationSessionId = instructor.verificationSessionId;
+      existingInstructor.verificationStatus = instructor.verificationStatus;
+      await existingInstructor.save();
+    } else {
+      const newInstructor = new User({
+        _id: instructor._id,
+        firstName: instructor.firstName,
+        lastName: instructor.lastName,
+        email: instructor.email,
+        isVerified: instructor.isVerified,
+        verificationSessionId: instructor.verificationSessionId,
+        verificationStatus: instructor.verificationStatus,
+      });
+      await newInstructor.save();
+    }
+  }
+
   async findByEmail(email: string): Promise<UserEntity | null> {
     try {
       const user = await User.findOne({ email }).exec();
@@ -23,6 +44,20 @@ export class UserRepositoryImpl implements UserRepository {
     } catch (error: any) {
       throw new Error(`Failed to find user by email: ${error.message}`);
     }
+  }
+
+  async findById(id: string): Promise<UserEntity | null> {
+    try {
+      const user = await User.findById(id).exec();
+      return user ? (user.toObject() as UserEntity) : null;
+    } catch (error: any) {
+      throw new Error(`Failed to find user by id: ${error.message}`);
+    }
+  }
+
+  async findByVerificationSessionId(sessionId: string): Promise<UserEntity | null> {
+    const instructor = await User.findOne({ verificationSessionId: sessionId })
+    return instructor.toObject() as UserEntity
   }
 
   async approve(email: string): Promise<UserEntity | null> {

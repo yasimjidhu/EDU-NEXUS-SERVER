@@ -32,7 +32,6 @@ export class PaymentController {
   async handleOnboardingCompletion(req: Request, res: Response): Promise<void> {
     const { accountId } = req.params
     try {
-      console.log('account id in backend', accountId)
       const response = await this.paymentUseCase.handleOnboardingCompletion(accountId)
       console.log('response of handle on boarding completeion', response)
       res.status(200).json(response);
@@ -52,7 +51,7 @@ export class PaymentController {
   }
   async findTransactions(req: Request, res: Response): Promise<void> {
     const filter = req.query as { [key: string]: any };
-    console.log('filter in find transactions', filter);
+
 
     try {
       // Convert query parameters to the correct format if necessary
@@ -93,12 +92,32 @@ export class PaymentController {
       res.status(500).json({ error: 'Failed to fetch today\'s revenue' });
     }
   }
+
+  // method to get today revenue for admin
+  async getTodaysAdminRevenue(req: Request, res: Response): Promise<void> {
+    try {
+      const revenue = await this.paymentUseCase.getTodayRevenueForAdmin();
+      res.status(200).json({ revenue });
+    } catch (error) {
+      console.error('Error fetching today\'s revenue:', error);
+      res.status(500).json({ error: 'Failed to fetch today\'s revenue' });
+    }
+  }
   // Method to get total earnings
   async getTotalEarnings(req: Request, res: Response): Promise<void> {
     try {
       const instructorId = req.params.instructorId as string
       const totalEarnings = await this.paymentUseCase.getInstructorTotalEarnings(instructorId);
-      console.log('total earnings',totalEarnings)
+      res.status(200).json({ totalEarnings });
+    } catch (error) {
+      console.error('Error fetching total earnings:', error);
+      res.status(500).json({ error: 'Failed to fetch total earnings' });
+    }
+  }
+  // Method to get total earnings of admin
+  async getTotalEarningsOfAdmin(req: Request, res: Response): Promise<void> {
+    try {
+      const totalEarnings = await this.paymentUseCase.getAdminTotalEarnings();
       res.status(200).json({ totalEarnings });
     } catch (error) {
       console.error('Error fetching total earnings:', error);

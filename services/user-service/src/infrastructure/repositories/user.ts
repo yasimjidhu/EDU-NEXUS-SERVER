@@ -3,7 +3,10 @@ import { UserEntity } from "../../domain/entities/user";
 
 export interface UserRepository {
   save(user: UserEntity): Promise<UserEntity>;
+  update(instructor: UserEntity): Promise<void>
   findByEmail(email: string): Promise<UserEntity | null>;
+  findById(id: string): Promise<UserEntity | null>;
+  findByVerificationSessionId(sessionId: string): Promise<UserEntity | null>
   approve(email: string): Promise<UserEntity | null>
   reject(email: string): Promise<UserEntity | null>
   saveStripeAccountId(instructorId: string, stripeAccountId: string): Promise<void>

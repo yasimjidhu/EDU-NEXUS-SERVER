@@ -91,6 +91,10 @@ export class PayoutUseCase {
     return await this.payoutRepository.getAvailablePayoutsForInstructor(instructorId)
   }
 
+  async  getAvailablePayoutsForAdmin(): Promise<number>{
+    return await this.payoutRepository.getAvailablePayoutsForAdmin()
+  }
+
   async checkAccountVerification(accountId: string, email: string): Promise<void> {
     try {
       // Retrieve the account details

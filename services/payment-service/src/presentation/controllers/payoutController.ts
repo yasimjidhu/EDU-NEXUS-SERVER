@@ -83,7 +83,20 @@ export class PayoutController {
         } catch (error: any) {
           res.status(500).json({ error: error.message });
         }
-      }
+    }
+
+    async getAvailablePayoutsForAdmin(req: Request, res: Response): Promise<void> {
+
+        try {
+          const availablePayouts = await this.payoutUseCase.getAvailablePayoutsForAdmin();
+          console.log('available payouts',availablePayouts)
+          res.status(200).json({ availablePayouts });
+        } catch (error: any) {
+          res.status(500).json({ error: error.message });
+        }
+    }
+
+    
       
 
 

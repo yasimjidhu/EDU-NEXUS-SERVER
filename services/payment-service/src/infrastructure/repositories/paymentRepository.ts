@@ -261,6 +261,21 @@ export class PaymentRepositoryImpl implements PaymentRepository {
 
     return result.rows[0].today_revenue;
   }
+
+  async getTodayRevenueForAdmin():Promise<number>{
+    const todayStart = startOfDay(new Date())
+    const todayEnd  = endOfDay(new Date())
+
+    const query = `
+      SELECT COALESCE(SUM(admin_amount),0) AS today_revenue
+      FROM payments
+      WHERE created_at BETWEEN $1 AND $2;
+      `;
+
+      const result = await this.pool.query(query,[todayStart,todayEnd])
+      return result.rows[0].today_revenue
+  }
+
   // Method to get the total earnings of an instructor
   async getTotalEarningsForInstructor(instructorId: string): Promise<number> {
     const query = `
@@ -273,5 +288,19 @@ export class PaymentRepositoryImpl implements PaymentRepository {
     return result.rows[0].total_earnings;
   }
 
+  // Method to get the total earnings for the admin
+  async getTotalEarningsForAdmin(): Promise<number> {
+    const query = `
+      SELECT COALESCE(SUM(admin_amount), 0) AS total_earnings
+      FROM payments;
+    `;
 
+    try {
+      const result = await this.pool.query(query);
+      return result.rows[0].total_earnings;
+    } catch (error) {
+      console.error('Error retrieving total earnings for admin:', error);
+      throw new Error('Failed to retrieve total earnings for admin');
+    }
+  }
 }
