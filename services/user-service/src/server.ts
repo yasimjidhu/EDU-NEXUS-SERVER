@@ -5,21 +5,22 @@ import bodyParser from "body-parser";
 import cookieParser from 'cookie-parser'
 import connectDB from "./infrastructure/database/config";
 import userRouter from './presentation/http/routes/userRoutes'
+import webhookRouter from './presentation/http/routes/webhookRoute'
 import { UserRepositoryImpl } from "./infrastructure/repositories/UserImpl";
 import { ProfileUseCase } from "./application/use-case/ProfileUseCase";
 import { GrpcServer } from "./infrastructure/grpc/server";
 import startConsumer from "./infrastructure/kafka/consumer";
 
-
 dotenv.config();
 
 const app = express();
-app.use(cookieParser())
 
+app.use('/webhook', bodyParser.raw({ type: 'application/json' }), webhookRouter)
+
+app.use(cookieParser())
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 
 axios.defaults.withCredentials = true;
 
@@ -28,7 +29,6 @@ app.use("/user", userRouter);
 // Setup server
 const startServer = async () => {
   try {
-
     await connectDB()
     await startConsumer()
     const HTTP_PORT = process.env.HTTP_PORT || 3008

@@ -191,4 +191,88 @@ export class EmailService implements EmailRepository {
           console.error('Error sending verification email:', error);
         }
       }
+      async sendKycVerificationCompletedEmail(email: string): Promise<void> {
+        const mailOptions = {
+            from: `"Edu-Nexus The E-learning Platform" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'KYC Verification Completed Successfully!',
+            text: `
+                Dear User,
+
+                We are pleased to inform you that your KYC verification has been successfully completed.
+
+                Your account is now fully verified, and you can continue to enjoy all the features of our platform without any interruptions.
+
+                If you have any questions or need further assistance, please feel free to contact our support team at support@edu-nexus.com.
+
+                Best regards,
+                The Edu-Nexus Team
+            `,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <div style="background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                        <h1 style="color: #00796b;">KYC Verification Completed Successfully!</h1>
+                        <p>Dear User,</p>
+                        <p>We are pleased to inform you that your KYC verification has been successfully completed.</p>
+                        <p>Your account is now fully verified, and you can continue to enjoy all the features of our platform without any interruptions.</p>
+                        <p>If you have any questions or need further assistance, please feel free to contact our support team at <a href="mailto:support@edu-nexus.com">support@edu-nexus.com</a>.</p>
+                        <p>Best regards,</p>
+                        <p><strong>The Edu-Nexus Team</strong></p>
+                    </div>
+                </div>
+            `,
+        };
+
+        try {
+            await this.transporter.sendMail(mailOptions);
+            console.log('KYC verification completed email sent successfully.');
+        } catch (error) {
+            console.error('Error sending KYC verification completed email:', error);
+        }
+    }
+
+    async sendKycVerificationFailedEmail(email: string, currently_due: string[]): Promise<void> {
+        const mailOptions = {
+            from: `"Edu-Nexus The E-learning Platform" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Action Required: KYC Verification Failed',
+            text: `
+                Dear User,
+
+                We regret to inform you that your KYC verification has failed due to the following reasons:
+
+                ${currently_due.join('\n')}
+
+                Please address these issues to complete your KYC verification and ensure that your account is fully verified.
+
+                If you need assistance or have any questions, please contact our support team at support@edu-nexus.com.
+
+                Best regards,
+                The Edu-Nexus Team
+            `,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <div style="background-color: #ffebee; padding: 20px; border-radius: 10px;">
+                        <h1 style="color: #d32f2f;">Action Required: KYC Verification Failed</h1>
+                        <p>Dear User,</p>
+                        <p>We regret to inform you that your KYC verification has failed due to the following reasons:</p>
+                        <ul>
+                            ${currently_due.map(req => `<li>${req}</li>`).join('')}
+                        </ul>
+                        <p>Please address these issues to complete your KYC verification and ensure that your account is fully verified.</p>
+                        <p>If you need assistance or have any questions, please contact our support team at <a href="mailto:support@edu-nexus.com">support@edu-nexus.com</a>.</p>
+                        <p>Best regards,</p>
+                        <p><strong>The Edu-Nexus Team</strong></p>
+                    </div>
+                </div>
+            `,
+        };
+
+        try {
+            await this.transporter.sendMail(mailOptions);
+            console.log('KYC verification failed email sent successfully.');
+        } catch (error) {
+            console.error('Error sending KYC verification failed email:', error);
+        }
+    }
 }

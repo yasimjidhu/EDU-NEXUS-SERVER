@@ -21,6 +21,7 @@ export interface UserRepository {
   getVerifiedInstructors(): Promise<UserEntity[]>
   getUnVerifiedInstructors(): Promise<UserEntity[]>
   updateUserDetails(email: string, data: Partial<UserEntity>): Promise<UserEntity | null>
+  updateKYCStatus(userId: string, status: string): Promise<UserEntity>;
   postFeedback(feedback:FeedbackEntity): Promise<FeedbackEntity | null>
   getFeedbacks(): Promise<FeedbackEntity[] | []>
 } 

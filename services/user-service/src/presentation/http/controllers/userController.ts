@@ -46,7 +46,7 @@ export class UserController {
   async approveInstructorHandler(req: Request, res: Response): Promise<void> {
     try {
       const { email } = req.body;
-
+      console.log('approve instructor reached in bakend',email)
       const updatedUser = await this.authorizeUserUseCase.approveInstructor(
         email
       );

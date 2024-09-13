@@ -15,13 +15,17 @@ const runConsumer = async () => {
     await consumer.connect();
     console.log('Consumer connected');
 
-    // Subscribe to multiple topics
+    // Subscribe to all topics before running the consumer
     await consumer.subscribe({ topic: 'course-approval', fromBeginning: true });
     await consumer.subscribe({ topic: 'instructor-approval', fromBeginning: true });
     await consumer.subscribe({ topic: 'payment-events', fromBeginning: true });
     await consumer.subscribe({ topic: 'verification-notifications', fromBeginning: true });
+    await consumer.subscribe({ topic: 'kyc-verified', fromBeginning: true });
+    await consumer.subscribe({ topic: 'kyc-verification-failed', fromBeginning: true });
+    
     console.log('Consumer subscribed to topics');
 
+    // Now start the consumer after all subscriptions
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
@@ -38,12 +42,17 @@ const runConsumer = async () => {
             case 'verification-notifications':
               await handleVerificationNotificationMessage(message);
               break;
+            case 'kyc-verified':
+              await handleKycVerificationSuccess(message);
+              break;
+            case 'kyc-verification-failed':
+              await handleKycVerificationFailed(message);
+              break;
             default:
               console.warn('Unknown topic received', topic);
           }
-          await consumer.commitOffsets([
-            { topic, partition, offset: (parseInt(message.offset) + 1).toString() },
-          ]);
+          // Commit the offset after processing the message
+          await consumer.commitOffsets([{ topic, partition, offset: (parseInt(message.offset) + 1).toString() }]);
         } catch (error) {
           console.error('Error processing message', error);
         }
@@ -55,6 +64,7 @@ const runConsumer = async () => {
     console.error('Error in consumer setup', error);
   }
 };
+
 
 const handleCourseApprovalMessage = async (message: KafkaMessage) => {
   const { email, action, courseName } = JSON.parse(message.value?.toString() ?? '{}');
@@ -112,6 +122,22 @@ const handleVerificationNotificationMessage = async (message: KafkaMessage) => {
   console.log('Verification email sent', email);
 };
 
+const handleKycVerificationSuccess = async (message: KafkaMessage) => {
+  const { email, action } = JSON.parse(message.value?.toString() ?? '{}');
+  console.log('KYC verification success message received', { email, action });
+
+  await emailService.sendKycVerificationCompletedEmail(email);
+  console.log('KYC verification completed email sent', email);
+};
+
+const handleKycVerificationFailed = async (message: KafkaMessage) => {
+  const { email, action } = JSON.parse(message.value?.toString() ?? '{}');
+  console.log('KYC verification failed message received', { email, action });
+
+  await emailService.sendKycVerificationFailedEmail(email,action);
+  console.log('KYC verification failed email sent', email);
+};
+
 const shutdown = async () => {
   console.log('Shutting down consumer...');
   try {
@@ -131,7 +157,3 @@ process.on('SIGTERM', shutdown);
 export const startConsumer = async () => {
   await runConsumer();
 };
-
-startConsumer().catch((error) => {
-  console.error('Error starting consumer', error);
-});

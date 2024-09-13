@@ -1,6 +1,6 @@
 import { ProducerBatch } from "kafkajs";
 import { producer } from "./kafkaProducer";
-import { BlockUserMessage, UnblockUserMessage } from "./messageTypes";
+import { BlockUserMessage, KycVerificationSuccessMessage, UnblockUserMessage } from "./messageTypes";
 
 export const sendBlockUserMessage = async (email: string) => {
     const message: BlockUserMessage = { email, action: 'block' };
@@ -14,7 +14,13 @@ export const sendUnblockUserMessage = async (email: string) => {
     await sendMessage('user-status', message);
 };
 
-async function sendMessage(topic: string, payload: BlockUserMessage | UnblockUserMessage) {
+export const sendKycVerificationSuccessMessage = async (email: string) => {
+    const message: KycVerificationSuccessMessage = { email, action: 'kyc-verified' };
+    console.log('KYC verification success message sent', email);
+    await sendMessage('kyc-verified', message);
+};
+
+async function sendMessage(topic: string, payload: BlockUserMessage | UnblockUserMessage | KycVerificationSuccessMessage) {
     try {
         await producer.connect();
 

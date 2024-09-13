@@ -67,6 +67,7 @@ export class UserRepositoryImpl implements UserRepository {
         { $set: { isVerified: true } },
         { new: true }
       );
+      console.log('updated user',updatedUser)
       return updatedUser ? (updatedUser.toObject() as UserEntity) : null;
     } catch (error: any) {
       throw new Error(`Failed to approve user: ${error.message}`);
@@ -280,7 +281,14 @@ export class UserRepositoryImpl implements UserRepository {
       throw new Error('Error updating instructor status'); // Rethrow the error for further handling
     }
   }
-
+  async updateKYCStatus(userId: string, status: string): Promise<UserEntity> {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { verificationStatus: status },
+      { new: true }
+    );
+    return updatedUser.toObject() as UserEntity;
+  }
 
   async postFeedback(feedback: FeedbackEntity): Promise<FeedbackEntity | null> {
     try {
