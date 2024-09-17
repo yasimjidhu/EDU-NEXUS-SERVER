@@ -49,18 +49,28 @@ export class PaymentController {
       res.status(500).json({ error: error.message });
     }
   }
-  async findTransactions(req: Request, res: Response): Promise<void> {
-    const filter = req.query as { [key: string]: any };
-
-
+  async requestRefund(req: Request, res: Response): Promise<void> {
+    const { userId,courseId } = req.body
     try {
-      // Convert query parameters to the correct format if necessary
-      const transactions = await this.paymentUseCase.getTransactions(filter);
-      res.status(200).json(transactions);
+      const result = await this.paymentUseCase.processRefund(userId,courseId);
+      res.status(200).json({ result, success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async findTransactions(req: Request, res: Response): Promise<void> {
+    const filter = req.query as { [key: string]: any };
+
+    try {
+      // Convert query parameters to the correct format if necessary
+      const { transactions, totalPages } = await this.paymentUseCase.getTransactions(filter);
+      res.status(200).json({ transactions, totalPages });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async findInstructorCoursesTransaction(req: Request, res: Response): Promise<void> {
     const { instructorId } = req.params;
     const page = parseInt(req.query.page as string, 10) || 1;
@@ -82,6 +92,28 @@ export class PaymentController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async findStudentrCoursesTransaction(req: Request, res: Response): Promise<void> {
+    const { userId } = req.params;
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const offset = (page - 1) * limit;
+    console.log('find student course transaction',userId)
+    try {
+      const transactions = await this.paymentUseCase.getStudentCoursesTransaction(userId, limit, offset);
+      const totalTransactions = await this.paymentUseCase.getTotalTransactionsForStudent(userId);
+      console.log('transactions are',transactions)
+      res.status(200).json({
+        transactions,
+        currentPage: page,
+        totalPages: Math.ceil(totalTransactions / limit),
+        totalTransactions
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async getTodayRevenue(req: Request, res: Response): Promise<void> {
     try {
       const instructorId = req.params.instructorId as string

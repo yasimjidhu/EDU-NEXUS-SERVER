@@ -6,6 +6,7 @@ export class PayoutEntity {
     accountId: string;
     amount: number;
     currency?: string; 
+    destination:any;
     status: string;
     createdAt: Date;
     updatedAt: Date;
@@ -16,6 +17,7 @@ export class PayoutEntity {
       accountId: string,
       amount: number,
       currency: string,
+      destination:any,
       status: string = 'pending'
     ) {
       this.paymentId = paymentId;
@@ -23,6 +25,7 @@ export class PayoutEntity {
       this.accountId = accountId;
       this.amount = amount;
       this.currency = currency;
+      this.destination = destination;
       this.status = status;
       this.createdAt = new Date();
       this.updatedAt = new Date();

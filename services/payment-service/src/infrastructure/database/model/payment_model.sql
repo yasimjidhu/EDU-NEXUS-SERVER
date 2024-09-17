@@ -1,6 +1,8 @@
 
   CREATE TABLE payments (
     id VARCHAR(255) PRIMARY KEY,
+    session_id VARCHAR(255),
+    stripe_payment_intent_id VARCHAR(255),
     user_id VARCHAR(255) NOT NULL,
     instructor_id VARCHAR(255) NOT NULL,
     course_id VARCHAR(255) NOT NULL,

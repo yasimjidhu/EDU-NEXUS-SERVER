@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'; // Importing a UUID generator
 
 export class PaymentEntity {
-  id?: string;
+  id: string; // ID should always be present
   sessionId: string;
+  stripe_payment_intent_id: string;
   userId: string;
   instructorId?: string;
   courseId: string;
@@ -20,7 +21,9 @@ export class PaymentEntity {
   instructorPayoutStatus?: 'pending' | 'completed' | 'failed';
 
   constructor(
+    id: string = uuidv4(),
     sessionId: string,
+    stripe_payment_intent_id: string,
     userId: string,
     instructorId: string,
     courseId: string,
@@ -30,16 +33,16 @@ export class PaymentEntity {
     instructorAmount: number,
     currency: string,
     status: 'pending' | 'completed' | 'failed',
-    createdAt: Date,
-    updatedAt: Date,
+    createdAt: Date = new Date(), // Default to current date
+    updatedAt: Date = new Date(), // Default to current date
     adminAccountId?: string, // Make optional
     instructorAccountId?: string, // Make optional
     adminPayoutStatus?: 'pending' | 'completed' | 'failed',
     instructorPayoutStatus?: 'pending' | 'completed' | 'failed',
-    id: string = uuidv4() // Generate UUID if not provided
   ) {
     this.id = id;
     this.sessionId = sessionId;
+    this.stripe_payment_intent_id = stripe_payment_intent_id;
     this.userId = userId;
     this.instructorId = instructorId;
     this.courseId = courseId;

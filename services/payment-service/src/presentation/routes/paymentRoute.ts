@@ -23,14 +23,21 @@ const paymentController = new PaymentController(paymentUseCase);
 const router = Router();
 
 // payment endpoints
-router.post('/create-checkout-session',authMiddleware, paymentController.createCheckoutSession.bind(paymentController));
 router.post('/create-account-link', paymentController.createConnectedAccount.bind(paymentController));
 router.get('/complete-onboarding/:accountId',authMiddleware, paymentController.handleOnboardingCompletion.bind(paymentController));
+
+router.post('/create-checkout-session',authMiddleware, paymentController.createCheckoutSession.bind(paymentController));
 router.post('/complete-purchase',authMiddleware,studentMiddleware,paymentController.completePurchase.bind(paymentController))
+
+router.post('/refund',authMiddleware,studentMiddleware,paymentController.requestRefund.bind(paymentController))
+
 router.get('/find-transactions',authMiddleware,adminMiddleware, paymentController.findTransactions.bind(paymentController));
 router.get('/find-transactions/:instructorId',authMiddleware, paymentController.findInstructorCoursesTransaction.bind(paymentController));
+router.get('/find-transaction/:userId',authMiddleware, paymentController.findStudentrCoursesTransaction.bind(paymentController));
+
 router.get('/todays-revenue',authMiddleware,adminMiddleware, paymentController.getTodaysAdminRevenue.bind(paymentController));
 router.get('/todays-revenue/:instructorId',authMiddleware,instructorMiddleware, paymentController.getTodayRevenue.bind(paymentController));
+
 router.get('/total-earnings',authMiddleware,adminMiddleware, paymentController.getTotalEarningsOfAdmin.bind(paymentController));
 router.get('/total-earnings/:instructorId',authMiddleware,instructorMiddleware, paymentController.getTotalEarnings.bind(paymentController));
 
