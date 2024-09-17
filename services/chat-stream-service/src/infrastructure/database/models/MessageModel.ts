@@ -6,6 +6,11 @@ const messageSchema = new mongoose.Schema({
   senderProfile:{type:String,required:false},
   conversationId:{type:String,required:true},
   recipientEmail:{type:String,required:false},
+  replyTo: {
+    messageId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    text: { type: String }, // embedding text of the replied message
+    senderId: { type: mongoose.Schema.Types.ObjectId,}, // sender of the original message
+  },  
   text: { type: String, required: false },
   fileUrl: { type: String },
   fileType: { type: String },

@@ -8,6 +8,27 @@ export class ChatRepository implements IChatRepository {
     const savedMessage = await newMessage.save();
     return savedMessage.toObject() as Message;
   }
+  async deleteMessage(messageId: string): Promise<Message> {
+    try {  
+      // Find the message by its ID before deleting it
+      const messageToDelete = await MessageModel.findById(messageId).exec();
+  
+      if (!messageToDelete) {
+        console.error('Message not found');
+        throw new Error('Message not found');
+      }
+  
+      // Delete the message
+      await MessageModel.findByIdAndDelete(messageId).exec();
+      console.log('deteled mesage',messageToDelete)
+      // Return the deleted message
+      return messageToDelete.toObject() as Message;
+    } catch (error: any) {
+      console.error('Error deleting message:', error);
+      throw error;
+    }
+  }
+  
   async updateMessageStatus(messageId: string, userId: string, status: string): Promise<Message> {
     const updateFields: any = { status };  // Always update the status
   

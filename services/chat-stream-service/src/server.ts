@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -79,8 +78,8 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('join', (conversationId: string) => {
-    if (!socket.rooms.has(conversationId)){
-      socket.join(conversationId);  
+    if (!socket.rooms.has(conversationId)) {
+      socket.join(conversationId);
       console.log(`User joined room ${conversationId}`);
     }
   });
@@ -91,27 +90,40 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('message', (message: Message) => {
-    const { conversationId,recipientEmail } = message;
+    const { conversationId, recipientEmail } = message;
 
     socket.broadcast.to(conversationId).emit('message', message)
 
     // emit a notification to the recipient's user specific unread count
     const recipientRoom = `user-${recipientEmail}`;
-    io.to(recipientRoom).emit('newMessage',message)
+    io.to(recipientRoom).emit('newMessage', message)
   });
 
-  socket.on('messageDelivered', async ({messageId,userId}: {messageId:string,userId:string}) => {
+  socket.on('deleteMessage', async ({ messageId }) => {
     try {
-      const updatedMessage = await chatUseCase.updateMessageStatus(messageId,userId, 'delivered')
+      const deletedMessage = await chatUseCase.deleteMessage(messageId);
+      console.log('delte message in server', deletedMessage)
+      if (deletedMessage) {
+        io.to(deletedMessage.conversationId).emit('messageDeleted', deletedMessage);
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
+  });
+
+
+  socket.on('messageDelivered', async ({ messageId, userId }: { messageId: string, userId: string }) => {
+    try {
+      const updatedMessage = await chatUseCase.updateMessageStatus(messageId, userId, 'delivered')
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
     } catch (error: any) {
       console.error('Error updating message status to delivered', error)
     }
   })
 
-  socket.on('messageRead', async ({messageId,userId}: {messageId:string,userId:string}) => {
+  socket.on('messageRead', async ({ messageId, userId }: { messageId: string, userId: string }) => {
     try {
-      const updatedMessage = await chatUseCase.updateMessageStatus(messageId,userId, 'read')
+      const updatedMessage = await chatUseCase.updateMessageStatus(messageId, userId, 'read')
       io.to(updatedMessage.conversationId).emit('messageStatusUpdated', updatedMessage);
     } catch (error: any) {
       console.error('Error updating message status to delivered', error)
@@ -123,17 +135,17 @@ io.on('connection', (socket: Socket) => {
     socket.to(conversationId).emit('typing', { userId, isTyping });
   });
 
-  socket.on('joinGroup',(groupId:string)=>{
+  socket.on('joinGroup', (groupId: string) => {
     socket.join(groupId)
   })
 
-  socket.on('leaveGroup',(groupId:string,userId:string,userName:string)=>{
+  socket.on('leaveGroup', (groupId: string, userId: string, userName: string) => {
     socket.leave(groupId)
-    io.to(groupId).emit('userLeft',userName)
+    io.to(groupId).emit('userLeft', userName)
   })
 
-  socket.on('groupMessage',(groupId:string,message:Message)=>{
-    io.to(groupId).emit('groupMessage',message)
+  socket.on('groupMessage', (groupId: string, message: Message) => {
+    io.to(groupId).emit('groupMessage', message)
   })
 });
 
