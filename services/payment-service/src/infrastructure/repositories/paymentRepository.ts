@@ -209,6 +209,7 @@ export class PaymentRepositoryImpl implements PaymentRepository {
       const transactions = transactionsResult.rows.map(row => new PaymentEntity(
         '',
         row.session_id,
+        row.stripe_payment_intent_id,
         row.user_id,
         row.instructor_id,
         row.course_id,
