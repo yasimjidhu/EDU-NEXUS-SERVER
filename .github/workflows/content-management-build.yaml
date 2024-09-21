@@ -32,7 +32,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ../../services/content-management-service/
+          context: ./services/content-management-service/  
+          file: ./services/content-management-service/Dockerfile 
           platforms: linux/amd64,linux/arm64
           push: true
           tags: yasimdirshad/edu-nexus-content-management:latest  

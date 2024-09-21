@@ -32,7 +32,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ../../services/user-service/
+          context: ./services/auth-service/  
+          file: ./services/auth-service/Dockerfile  
           platforms: linux/amd64,linux/arm64
           push: true
           tags: yasimdirshad/edu-nexus-user:latest  

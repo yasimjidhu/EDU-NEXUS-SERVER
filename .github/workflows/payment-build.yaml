@@ -32,7 +32,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ../../services/payment-service/
+          context: ./services/payment-service/  
+          file: ./services/payment-service/Dockerfile  
           platforms: linux/amd64,linux/arm64
           push: true
           tags: yasimdirshad/edu-nexus-payment:latest  
