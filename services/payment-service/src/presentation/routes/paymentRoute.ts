@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import Stripe from 'stripe';
-import pool from '../../infrastructure/database/paymentDb';
 import { PaymentUseCase } from '../../application/usecases/paymentUseCase';
 import { PaymentRepositoryImpl } from '../../infrastructure/repositories/paymentRepository';
 import { PaymentController } from '../controllers/paymentController';
@@ -16,7 +15,7 @@ const producer = new KafkaProducer()
 
 export const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' });
 const stripeService = new StripeService(stripe)
-const paymentRepository = new PaymentRepositoryImpl(pool);
+const paymentRepository = new PaymentRepositoryImpl();
 const paymentUseCase = new PaymentUseCase(paymentRepository, stripe,producer,stripeService);
 const paymentController = new PaymentController(paymentUseCase);
 

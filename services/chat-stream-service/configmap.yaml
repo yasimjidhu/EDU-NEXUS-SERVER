@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chat-service-config
+data:
+  CHAT_AND_STREAM_DB: "mongodb+srv://dirshadyasim:jidhuyasim@e-learning.k0svqqa.mongodb.net/ChatAndStream?retryWrites=true&w=majority&appName=e-learning"
+  AZURE_DB_URI: "mongodb+srv://yasim:edunexus@123@edu-nexus.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+  JWT_ACCESS_TOKEN_SECRET: "edunexus000"

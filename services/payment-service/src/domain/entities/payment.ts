@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'; // Importing a UUID generator
 export class PaymentEntity {
   id: string; // ID should always be present
   sessionId: string;
-  stripe_payment_intent_id: string;
+  stripePaymentIntentId: string;
   userId: string;
   instructorId?: string;
   courseId: string;
@@ -23,7 +23,7 @@ export class PaymentEntity {
   constructor(
     id: string = uuidv4(),
     sessionId: string,
-    stripe_payment_intent_id: string,
+    stripePaymentIntentId: string,
     userId: string,
     instructorId: string,
     courseId: string,
@@ -42,7 +42,7 @@ export class PaymentEntity {
   ) {
     this.id = id;
     this.sessionId = sessionId;
-    this.stripe_payment_intent_id = stripe_payment_intent_id;
+    this.stripePaymentIntentId = stripePaymentIntentId;
     this.userId = userId;
     this.instructorId = instructorId;
     this.courseId = courseId;

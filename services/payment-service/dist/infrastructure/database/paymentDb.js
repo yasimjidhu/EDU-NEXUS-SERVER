@@ -21,7 +21,7 @@ const StartPaymentDb = async () => {
         console.log('Connected to PostgreSQL database');
     }
     catch (error) {
-        console.error('Error connecting to PostgreSQL database:', error.message);
+        console.error('Error connecting to PostgreSQL database:', error);
     }
 };
 exports.StartPaymentDb = StartPaymentDb;

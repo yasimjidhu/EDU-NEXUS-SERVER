@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: edunexus.azurecr.io/payment-service:latest
+          ports:
+            - containerPort: 3005
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: POSTGRES_PORT
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: POSTGRES_DB
+            - name: KAFKA_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: KAFKA_API_KEY
+            - name: KAFKA_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: KAFKA_SECRET
+            - name: PAYMENTS_DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: PAYMENTS_DB_PASSWORD
+            - name: PAYMENTS_DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: PAYMENTS_DB_URL
+            - name: AZURE_DB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: AZURE_DB_URI
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: STRIPE_WEBHOOK_SECRET
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: STRIPE_SECRET_KEY
+            - name: STRIPE_ADMIN_ACCOUNT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: STRIPE_ADMIN_ACCOUNT_ID
+            - name: EXCHANGE_RATE_API
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: EXCHANGE_RATE_API
+            - name: EXCHANGE_RATE_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: EXCHANGE_RATE_API_KEY
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: JWT_SECRET
+            - name: JWT_ACCESS_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: JWT_ACCESS_TOKEN_SECRET
+            - name: JWT_REFRESH_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: JWT_REFRESH_TOKEN_SECRET
+            - name: ACCESS_TOKEN_EXPIRY
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: ACCESS_TOKEN_EXPIRY
+            - name: REFRESH_TOKEN_EXPIRY
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: REFRESH_TOKEN_EXPIRY
+            - name: FRONTEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: payment-service-config
+                  key: FRONTEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  ports:
+    - port: 3005
+  selector:
+    app: payment-service

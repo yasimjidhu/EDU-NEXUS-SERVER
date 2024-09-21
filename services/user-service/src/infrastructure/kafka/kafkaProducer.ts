@@ -1,8 +1,14 @@
 import { Kafka } from 'kafkajs';
 
-const kafka = new Kafka({
+export const kafka = new Kafka({
   clientId: 'user-service-client',
-  brokers: ['localhost:9092'],
+  brokers: ['cluster_0.confluent.cloud:9092'],
+  ssl: true,
+  sasl: {
+    mechanism: 'plain', 
+    username: process.env.KAFKA_API_KEY || '',
+    password: process.env.KAFKA_SECRET || '',
+  },
 });
 
 export const producer = kafka.producer();

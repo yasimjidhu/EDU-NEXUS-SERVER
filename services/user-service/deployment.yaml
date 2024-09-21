@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: edunexus.azurecr.io/user-service:latest
+          ports:
+            - containerPort: 3002
+          env:
+            - name: CLOUDINARY_CLOUD_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: CLOUDINARY_CLOUD_NAME
+            - name: CLOUDINARY_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: CLOUDINARY_API_KEY
+            - name: CLOUDINARY_API_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: CLOUDINARY_API_SECRET
+            - name: CLOUDINARY_UPLOAD_PRESET
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: CLOUDINARY_UPLOAD_PRESET
+            - name: CLOUDINARY_CV_PRESET
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: CLOUDINARY_CV_PRESET
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: STRIPE_SECRET_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: STRIPE_WEBHOOK_SECRET
+            - name: USER_DB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: USER_DB_URI
+            - name: AZURE_DB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: AZURE_DB_URI
+            - name: COURCES_DB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: COURCES_DB_URI
+            - name: KAFKA_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: KAFKA_API_KEY
+            - name: KAFKA_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: KAFKA_SECRET
+            - name: JWT_ACCESS_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: JWT_ACCESS_TOKEN_SECRET
+            - name: JWT_REFRESH_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: JWT_REFRESH_TOKEN_SECRET
+            - name: HTTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: HTTP_PORT
+            - name: GRPC_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-config
+                  key: GRPC_PORT
+      imagePullSecrets:
+        - name: acr-auth  
+ 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  ports:
+    - port: 3002
+  selector:
+    app: user-service

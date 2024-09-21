@@ -2,7 +2,6 @@
 
 import { Router } from 'express';
 import Stripe from 'stripe';
-import pool from '../../infrastructure/database/paymentDb';
 import { authMiddleware } from '../middlewares/authenticationMiddleware';
 import { adminMiddleware, instructorMiddleware } from '../middlewares/authorizationMiddleware';
 import { PayoutUseCase } from '../../application/usecases/payoutUseCase';

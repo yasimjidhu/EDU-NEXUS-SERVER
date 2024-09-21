@@ -155,7 +155,7 @@ export class PaymentUseCase {
 
     try {
       // Fetch conversion rates from the API using axios
-      const response = await axios.get(`https://v6.exchangerate-api.com/v6/df9d59df3e26aea3869c4905/latest/${fromCurrency}`)
+      const response:any = await axios.get(`https://v6.exchangerate-api.com/v6/df9d59df3e26aea3869c4905/latest/${fromCurrency}`)
       return response.data.conversion_rates[toCurrency];
     } catch (error) {
       console.error('Error fetching conversion rate:', error);
@@ -239,7 +239,7 @@ export class PaymentUseCase {
 
       // Refund the transaction
       const refund = await this.stripe.refunds.create({
-        payment_intent: payment.stripe_payment_intent_id,
+        payment_intent: payment.stripePaymentIntentId,
         amount: payment.amountInINR ? payment.amountInINR * 100 : undefined,
       });
 
@@ -247,7 +247,7 @@ export class PaymentUseCase {
       const adminRefundAmount = payment.amountInINR! *  0.3  // 30% from admin
 
       // Update transaction status in your database
-      await this.paymentRepository.updateStatus(payment.stripe_payment_intent_id, 'refunded');
+      await this.paymentRepository.updateStatus(payment.stripePaymentIntentId, 'refunded');
 
       return refund;
     } catch (error:any) {

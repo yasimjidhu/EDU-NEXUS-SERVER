@@ -6,7 +6,7 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const connectDB = async () => {
-  const MONGO_URI = process.env.COURCES_DB_URI || 'mongodb://localhost:27017/Users';
+  const MONGO_URI = process.env.USER_DB_URI || 'mongodb://localhost:27017/Users';
 
   try {
     await mongoose.connect(MONGO_URI, {

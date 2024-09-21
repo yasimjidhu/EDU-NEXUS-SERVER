@@ -1,24 +1,23 @@
-import dotenv from 'dotenv'
-import { Pool, PoolConfig } from 'pg';
-dotenv.config()
 
-const dbConfig: PoolConfig = {
-  user: process.env.POSTGRES_USER,
-  host: 'localhost',
-  database: process.env.POSTGRES_DB, 
-  password: process.env.POSTGRES_PASSWORD,
-  port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 5432,
-};
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import path from 'path';
 
-const pool = new Pool(dbConfig);
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
-export const StartPaymentDb = async () => {
+const connectDB = async () => {
+  const MONGO_URI = process.env.AZURE_DB_URI || 'mongodb://localhost:27017/PaymentsDB';
+
   try {
-    await pool.connect();
-    console.log('Connected to PostgreSQL database');
-  } catch (error:any) {
-    console.error('Error connecting to PostgreSQL database:', error);
+    await mongoose.connect(MONGO_URI, {
+      dbName: 'Payments', 
+    });
+    console.log('Connected to MongoDB Payments database',MONGO_URI);
+  } catch (error) {
+    console.error('Error connecting to MongoDB', error);
+    process.exit(1);
   }
 };
 
-export default pool;
+export default connectDB;
+

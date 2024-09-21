@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-service-config
+data:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "yasimjidhu"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "payments"
+
+  KAFKA_API_KEY: "NREHPEEWWAMK45U4"
+  KAFKA_SECRET: "ylYgxFaLQad5iN7GyOgHriDCeErYeBDhfvq6lJ5pWBGHPhty5Os8S6uSZTJDogcT"
+
+  PAYMENTS_DB_PASSWORD: "yasimjidhu"
+
+  PAYMENTS_DB_URL: "mongodb+srv://dirshadyasim:jidhuyasim@e-learning.k0svqqa.mongodb.net/Payments?retryWrites=true&w=majority&appName=e-learning"
+  AZURE_DB_URI: "mongodb+srv://yasim:edunexus@123@edu-nexus.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+
+  STRIPE_WEBHOOK_SECRET: "whsec_a94f8aafab53ea198952d736937f3559cc7f5bded0e78b1536d373baae4cd61f"
+  STRIPE_SECRET_KEY: "sk_test_51PaDenRuKRhsspaRQ248qoHkuCyrRPzYgKUZDcScVo8KSGtscCRYQ4obGQ8pAceYxSVHQMPSYzkoI2PaqJx21ENn00w3pkMjKi"
+  STRIPE_ADMIN_ACCOUNT_ID: "acct_1PxSbl2LLnux89P1"
+
+  EXCHANGE_RATE_API: "https://v6.exchangerate-api.com/v6/df9d59df3e26aea3869c4905/latest/USD"
+  EXCHANGE_RATE_API_KEY: "df9d59df3e26aea3869c4905"
+
+  JWT_SECRET: "edunexus000"
+  JWT_ACCESS_TOKEN_SECRET: "edunexus000"
+  JWT_REFRESH_TOKEN_SECRET: "refreshnexus"
+  ACCESS_TOKEN_EXPIRY: "15m"
+  REFRESH_TOKEN_EXPIRY: "7d"
+
+  FRONTEND_URL: "http://localhost:5173"
