@@ -32,7 +32,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./services/chat-stream-service/
+          context: ../../services/chat-stream-service/
           platforms: linux/amd64,linux/arm64
           push: true
           tags: yasimdirshad/edu-nexus-chat:latest  
